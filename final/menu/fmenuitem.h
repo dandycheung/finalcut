@@ -3,7 +3,7 @@
 *                                                                      *
 * This file is part of the FINAL CUT widget toolkit                    *
 *                                                                      *
-* Copyright 2015-2023 Markus Gans                                      *
+* Copyright 2015-2024 Markus Gans                                      *
 *                                                                      *
 * FINAL CUT is free software; you can redistribute it and/or modify    *
 * it under the terms of the GNU Lesser General Public License as       *
@@ -125,8 +125,8 @@ class FMenuItem : public FWidget
     auto hasMenu() const -> bool;
 
     // Methods
-    void addAccelerator (FKey, FWidget*) & override;
-    void delAccelerator (FWidget*) & override;
+    void addAccelerator (FKey, FWidget*) & final;
+    void delAccelerator (FWidget*) & final;
     void openMenu() const;
 
     // Event handlers
@@ -155,19 +155,36 @@ class FMenuItem : public FWidget
     void initLayout() override;
 
   private:
+    struct DialogItemData
+    {
+      FDialog*       dialog;
+      const FString& name;
+      FString        state;
+      uInt32         index;
+    };
+
     // Accessor
     auto getFMenuList (FWidget&) -> FMenuList*;
 
     // Methods
     void init();
+    void initTextProperties();
+    void initAccelerator();
+    void initMenuBar (FMenuBar&);
+    void initMenu (FMenu&) const;
     void calculateTextDimensions();
     void updateSuperMenuDimensions();
     void updateMenubarDimensions() const;
+    void handleMenuSelection (FMenuBar*, const FAccelEvent*);
+    void updateMenuSelection (const FAccelEvent*) const;
+    void handleMenuBarSelection (FMenuBar*);
     void processEnable() const;
     void processDisable() const;
     void processActivate() const;
     void processDeactivate() const;
     void createDialogList (FMenu*) const;
+    void createDialogItem (FMenu*, const DialogItemData&) const;
+    void configDialogItem (FMenuItem*, const DialogItemData&) const;
     template <typename T>
     void passMouseEvent (T, const FMouseEvent*, Event) const;
     void resetSelectedItem (const FMenuList*) const;
@@ -266,7 +283,7 @@ inline void FMenuItem::unsetRadioButton() noexcept
 { radio_button = false; }
 
 //----------------------------------------------------------------------
-inline void FMenuItem::setMenu(FMenu* m)
+inline void FMenuItem::setMenu (FMenu* m)
 { menu = m; }
 
 //----------------------------------------------------------------------

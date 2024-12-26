@@ -400,12 +400,12 @@ inline void default16ColorTheme::setCurrentElementColors()
   current_element =
   {
     FColor::LightGray,  // Foreground
-    FColor::Blue,       // Background
+    FColor::DarkGray,   // Background
     FColor::White,      // Focused foreground
     FColor::Blue,       // Focused background
     FColor::LightRed,   // Incremental search foreground
-    FColor::LightBlue,  // Selected foreground
-    FColor::Blue,       // Selected background
+    FColor::LightCyan,  // Selected foreground
+    FColor::DarkGray,   // Selected background
     FColor::LightCyan,  // Selected focused foreground
     FColor::Blue        // Selected focused background
   };
@@ -903,8 +903,8 @@ inline void default16ColorDarkTheme::setCurrentElementColors()
 {
   current_element =
   {
-    FColor::LightBlue,  // Foreground
-    FColor::Cyan,       // Background
+    FColor::LightGray,  // Foreground
+    FColor::DarkGray,   // Background
     FColor::White,      // Focused foreground
     FColor::Cyan,       // Focused background
     FColor::LightRed,   // Incremental search foreground

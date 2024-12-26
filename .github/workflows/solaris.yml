@@ -17,14 +17,16 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Test on Solaris 11.4
-      uses: vmactions/solaris-vm@v1
+      uses: vmactions/solaris-vm@v1  # see https://github.com/vmactions/solaris-vm
       with:
+        release: "11.4-gcc"
         prepare: |
           pkg publisher solaris
           beadm list
           pkg info entire
           pkg list -af entire
           pkg list -af gcc-7
+          pkg list -af gcc-11
           pkg install -v --accept developer/gcc-7@7.3.0-11.4.0.0.1.14.0
           pkgutil -y -i automake autoconf autoconf_archive libtool pkgconfig libcppunit1_12_1 libcppunit_dev gsed ggrep
         mem: 6144

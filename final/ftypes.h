@@ -301,21 +301,36 @@ struct FCharAttribute
   uInt8                    : 8;  // padding byte
 };
 
-#if HAVE_BUILTIN(__builtin_bit_cast)
+
+constexpr auto FCharAttribute_to_uInt32 (const finalcut::FCharAttribute& fchar_attr) -> uInt32
+{
+  return uInt32(fchar_attr.bold)               << 0U
+       | uInt32(fchar_attr.dim)                << 1U
+       | uInt32(fchar_attr.italic)             << 2U
+       | uInt32(fchar_attr.underline)          << 3U
+       | uInt32(fchar_attr.blink)              << 4U
+       | uInt32(fchar_attr.reverse)            << 5U
+       | uInt32(fchar_attr.standout)           << 6U
+       | uInt32(fchar_attr.invisible)          << 7U
+       | uInt32(fchar_attr.protect)            << 8U
+       | uInt32(fchar_attr.crossed_out)        << 9U
+       | uInt32(fchar_attr.dbl_underline)      << 10U
+       | uInt32(fchar_attr.alt_charset)        << 11U
+       | uInt32(fchar_attr.pc_charset)         << 12U
+       | uInt32(fchar_attr.transparent)        << 13U
+       | uInt32(fchar_attr.color_overlay)      << 14U
+       | uInt32(fchar_attr.inherit_background) << 15U
+       | uInt32(fchar_attr.no_changes)         << 16U
+       | uInt32(fchar_attr.printed)            << 17U
+       | uInt32(fchar_attr.fullwidth_padding)  << 18U
+       | uInt32(fchar_attr.char_width)         << 19U;
+}
+
 constexpr auto getFAttributeByte ( const FCharAttribute& fchar_attr
                                  , std::size_t index ) noexcept -> uInt8
 {
-  return (__builtin_bit_cast(uInt32, fchar_attr) >> (index << 3)) & 0xff;
+  return (FCharAttribute_to_uInt32(fchar_attr) >> (index << 3)) & 0xff;
 }
-#else
-inline auto getFAttributeByte ( const FCharAttribute& fchar_attr
-                              , std::size_t index ) noexcept -> uInt8
-{
-  uInt8 byte{};
-  std::memcpy (&byte, reinterpret_cast<const uInt8*>(&fchar_attr) + index, sizeof(uInt8));
-  return byte;
-}
-#endif
 
 #if HAVE_BUILTIN(__builtin_bit_cast)
 constexpr auto setFAttributeByte ( FCharAttribute& fchar_attr
@@ -340,29 +355,29 @@ inline auto setFAttributeByte ( FCharAttribute& fchar_attr
 #endif
 
 #if HAVE_BUILTIN(__builtin_bit_cast)
-constexpr auto getFAttributeWord (const FCharAttribute& fchar_attr) noexcept -> uInt32
+constexpr auto getFAttributeData (const FCharAttribute& fchar_attr) noexcept -> uInt32
 {
-  return __builtin_bit_cast(uInt32, fchar_attr);
+  return FCharAttribute_to_uInt32(fchar_attr);
 }
 #else
-inline auto getFAttributeWord (const FCharAttribute& fchar_attr) noexcept -> uInt32
+inline auto getFAttributeData (const FCharAttribute& fchar_attr) noexcept -> uInt32
 {
-  uInt32 word{};
-  std::memcpy(&word, &fchar_attr, sizeof(word));
-  return word;
+  uInt32 data{};
+  std::memcpy(&data, &fchar_attr, sizeof(data));
+  return data;
 }
 #endif
 
 #if HAVE_BUILTIN(__builtin_bit_cast)
-constexpr auto WordToFAttribute (uInt32 word) noexcept -> FCharAttribute
+constexpr auto WordToFAttribute (uInt32 data) noexcept -> FCharAttribute
 {
-  return __builtin_bit_cast(FCharAttribute, word);
+  return __builtin_bit_cast(FCharAttribute, data);
 }
 #else
-inline auto WordToFAttribute (uInt32 word) noexcept -> FCharAttribute
+inline auto DataToFAttribute (uInt32 data) noexcept -> FCharAttribute
 {
   FCharAttribute fchar_attr{};
-  std::memcpy(&fchar_attr, &word, sizeof(fchar_attr));
+  std::memcpy(&fchar_attr, &data, sizeof(fchar_attr));
   return fchar_attr;
 }
 #endif
@@ -370,7 +385,7 @@ inline auto WordToFAttribute (uInt32 word) noexcept -> FCharAttribute
 union FAttribute
 {
   uInt8 byte[4];
-  uInt32 word;
+  uInt32 data;
   FCharAttribute bit;
 };
 
@@ -378,15 +393,18 @@ static constexpr std::size_t UNICODE_MAX = 5;
 
 using FUnicode = std::array<wchar_t, UNICODE_MAX>;
 
-enum class FColor : uInt16;   // forward declaration
+enum class FColor : uInt16;  // forward declaration
 
-struct FChar
+struct FColors
 {
-  FUnicode   ch{};            // Character code
-  FUnicode   encoded_char{};  // Encoded output character
-  FColor     fg_color{};      // Foreground color
-  FColor     bg_color{};      // Background color
-  FAttribute attr{};          // Attributes
+  FColor fg{};  // Foreground color
+  FColor bg{};  // Background color
+};
+
+union FCellColor
+{
+  FColors pair;  // Foreground and background color
+  uInt32  data;  // Color data
 };
 
 // FChar operator functions
@@ -399,7 +417,11 @@ constexpr auto isFUnicodeEqual (const FUnicode& lhs, const FUnicode& rhs) noexce
     return false;
 
   // Perform a byte-wise comparison
+#if __cplusplus >= 201703L
+  return std::memcmp(lhs.cbegin(), rhs.cbegin(), lhs.size() * sizeof(wchar_t)) == 0;
+#else
   return std::memcmp(&lhs[0], &rhs[0], lhs.size() * sizeof(wchar_t)) == 0;
+#endif
 }
 #else
 inline auto isFUnicodeEqual (const FUnicode& lhs, const FUnicode& rhs) noexcept -> bool
@@ -421,43 +443,53 @@ constexpr auto getCompareBitMask() noexcept -> uInt32
 inline auto getCompareBitMask() noexcept -> uInt32
 {
   const FAttribute mask {{ 0xff, 0xff, 0x04, 0x00 }};
-  uInt32 word{};
-  std::memcpy(&word, &mask, sizeof(word));
-  return word;
+  uInt32 data{};
+  std::memcpy(&data, &mask, sizeof(data));
+  return data;
 }
 #endif
 
 //----------------------------------------------------------------------
-#if HAVE_BUILTIN(__builtin_bit_cast)
-constexpr
-#else
-inline
-#endif
-auto operator == (const FChar& lhs, const FChar& rhs) noexcept -> bool
+struct alignas(std::max_align_t) FChar
 {
-  if ( ! isFUnicodeEqual(lhs.ch, rhs.ch)
-    || lhs.fg_color != rhs.fg_color
-    || lhs.bg_color != rhs.bg_color )
-    return false;
+  FUnicode   ch{};            // Character code
+  FUnicode   encoded_char{};  // Encoded output character
+  FCellColor color{};         // Foreground and background color
+  FAttribute attr{};          // Attributes
 
-  const auto mask = getCompareBitMask();
-
-  if ( (lhs.attr.word & mask) != (rhs.attr.word & mask) )
-    return false;
-
-  return true;
-}
-
-//----------------------------------------------------------------------
 #if HAVE_BUILTIN(__builtin_bit_cast)
-constexpr
+  friend constexpr
 #else
-inline
+  friend inline
 #endif
-auto operator != (const FChar& lhs, const FChar& rhs) noexcept -> bool
-{
-  return ! ( lhs == rhs );
-}
+  auto operator == (const FChar& lhs, const FChar& rhs) noexcept -> bool
+  {
+    if ( ! isFUnicodeEqual(lhs.ch, rhs.ch)
+      || lhs.color.data != rhs.color.data )
+      return false;
+
+#if HAVE_BUILTIN(__builtin_bit_cast)
+    constexpr auto mask = getCompareBitMask();
+#else
+    const auto mask = getCompareBitMask();
+#endif
+
+    if ( (lhs.attr.data & mask) != (rhs.attr.data & mask) )
+      return false;
+
+    return true;
+  }
+
+#if HAVE_BUILTIN(__builtin_bit_cast)
+  friend constexpr
+#else
+  friend inline
+#endif
+  auto operator != (const FChar& lhs, const FChar& rhs) noexcept -> bool
+  {
+    return ! ( lhs == rhs );
+  }
+};
 
 }  // namespace finalcut
 

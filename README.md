@@ -2,13 +2,16 @@
 
 # Library for creating terminal applications with text-based widgets
 
-FINAL CUT is a C++ class library and widget toolkit that enables developers to create [text-based user interfaces](https://en.wikipedia.org/wiki/Text-based_user_interface). FINAL CUT is a standalone library that interacts directly with the terminal without relying on external libraries such as [ncurses](https://invisible-island.net/ncurses/ncurses.html) or [termbox](https://code.google.com/archive/p/termbox/).
+FINAL CUT is a powerful and lightweight C++ library for creating [terminal-based applications](https://en.wikipedia.org/wiki/Text-based_user_interface) with numerous text-based widgets. FINAL CUT is designed for simplicity and does not require the functionality of external libraries (such as [ncurses](https://invisible-island.net/ncurses/ncurses.html) or [termbox](https://code.google.com/archive/p/termbox/)) but still offers full [mouse](doc/mouse-control.md#title-bar-actions-on-mouse-clicks) support, Unicode compatibility, and versatile widget functions.
 
-FINAL CUT provides full [mouse](doc/mouse-control.md#title-bar-actions-on-mouse-clicks) support, [UTF-8](https://en.wikipedia.org/wiki/UTF-8) character encoding, [full-width character](https://en.wikipedia.org/wiki/Halfwidth_and_fullwidth_forms) support, and the ability to display [combined Unicode characters](https://en.wikipedia.org/wiki/Combining_character). The library helps the programmer to create a text console application. It allows handling multiple text windows on the screen.
+It provides [UTF-8](https://en.wikipedia.org/wiki/UTF-8) character encoding, [full-width character](https://en.wikipedia.org/wiki/Halfwidth_and_fullwidth_forms) support, and the ability to display [combined Unicode characters](https://en.wikipedia.org/wiki/Combining_character). The library helps the developer to create an easy-to-use text console application and allows handling multiple text windows on the screen.
 
-The design of the C++ class structure of FINAL CUT was inspired by the Qt framework. It provides a variety of common controls, including dialog boxes, push buttons, check boxes, radio buttons, input lines, list boxes, and status bars. With FINAL CUT, developers can create text-based user interfaces that are both functional and visually appealing.
+The design of FINAL CUT's C++ class structure was inspired by the Qt framework. It provides a variety of common controls, including dialog boxes, push buttons, check boxes, radio buttons, input lines, list boxes, and status bars.
 
-## Building and code analysis
+![Architecture of the sub-systems of a FINAL CUT application](doc/subsystem-architecture.svg)
+
+
+## Building and Code Analysis
 
 |                    | Badge |
 |-------------------:|:------|
@@ -42,9 +45,7 @@ Before installing FINAL CUT, check if your computer meets the requirements. You 
 > su -c "make install"
 ```
 
-## Supported platforms
-
-If your platform is not listed here, it may still be compatible with FINAL CUT. I welcome any [help](Contributing.md) to make this software available on more platforms.
+## Supported Platforms
 
 FINAL CUT currently works on the following platforms:
 
@@ -57,51 +58,50 @@ FINAL CUT currently works on the following platforms:
 * GNU Hurd
 * Solaris
 
+If your platform is not listed here, it may still be compatible with FINAL CUT. [Contributions](Contributing.md) to extend the platform support are welcome!
+
 ## Documentation
 
-See the [first steps documentation](doc/first-steps.md#first-steps-with-the-final-cut-widget-toolkit) for information on how to use the library.
+Read the documentation on the [first steps](doc/first-steps.md#first-steps-with-the-final-cut-widget-toolkit) in FINAL CUT to find out how to use the library.
 
 ## Frequently Asked Questions
 
-For general questions about FINAL CUT, likely the answer is already included in the [FAQ](doc/faq.md#frequently-asked-questions).
+Check out the FINAL CUT [FAQ](doc/faq.md#frequently-asked-questions) for common questions and answers.
 
 ## Screenshots
 
-The FFileDialog widget with incremental file name search:
+Explore the power of FINAL CUT with these examples:
 
 ![FFileDialog](doc/fileopen-dialog.png)
-
-The FINAL CUT FProgressbar widget:
+<br />*FFileDialog widget with incremental search*<br /><br />
 
 ![FProgressbar](doc/progress-bar.png)
-
-Scrollable text in the FTextView widget:
+<br />*FProgressbar widget*<br /><br />
 
 ![FTextView](doc/textview.png)
-
-The Mandelbrot set example:
+<br />*Scrollable text in an FTextView widget*<br /><br />
 
 ![Mandelbrot set](doc/Mandelbrot.png)
+<br />*Mandelbrot set example*<br /><br />
 
 ## FINAL CUT newfont
 
-A [graphical text font](final/font/) for X11 and the Linux console.
+This project contains [NewFont](final/font/), a graphical text font for X11 and the Linux console:
 
 ![ui example in newfont mode](doc/newfont1.png)
-
-Newfont drive symbols:
+<br />*UI example in NewFont mode*<br /><br />
 
 ![drive symbols](doc/newfont2.png)
-
-The calculator example in newfont mode:
+<br />*Drive symbols*<br /><br />
 
 ![calculator](doc/calculator.png)
+<br />*Calculator example in NewFont mode*<br /><br />
 
 ## Benchmark
 
-Here you can find a test for [measuring the character speed](doc/benchmark.md#benchmark) in the terminal.
+Measure the [terminal character output speed](doc/benchmark.md#benchmark) with the Rotozoomer example.
 
-## Virtual terminal
+## Virtual Terminal
 
 FINAL CUT uses a virtual terminal to print character via an update method on the screen. It provides (as an overlying layer) virtual windows for the realization of window movements. The update methods only transfer differences to the virtual terminal or physical screen.
 
@@ -111,25 +111,23 @@ printf(...)
   │
   │          ╔════════════════════════[ vterm ]════════════════════════╗
   │          ║createVTerm()                                            ║
-  │          ║                               ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐ ║
+  │          ║                                   ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐ ║
   │          ║                                                         ║
-  │          ║                               │ restoreVTerm(x,y,w,h) │ ║
+  │          ║                                   │ restoreVTerm(box) │ ║
   │  ┌───────╨────[ vwin ]────────────┐                                ║
-  │  │createArea(area)                │      └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘ ║
+  │  │createArea(size)                │          └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘ ║
   │  │                                │                                ║
   │  │                                │                                ║
-  └──┼────────►                  putArea(area) ────►                   ║
+  └──┼────────►                putArea(pos,area) ────►                 ║
      │                                │                                ║
-     │                         putArea(x,y,area) ────►                 ║
-     │                                │                                ║
-     │                   ◄──── getArea(x,y,area)                       ║
+     │                   ◄──── getArea(pos,area)                       ║
      │                                │                                ║
      │                                │                                ║
      │                                │                                ║
-     │                resizeArea(area)│                                ║
+     │          resizeArea(size, area)│                                ║
      └───────╥────────────────────────┘                                ║
              ║                                                         ║
-             ║       │                                    resizeVTerm()║
+             ║       │                                resizeVTerm(size)║
              ╚═══════▼═════════════════════════════════════════════════╝
                      │
                      │   putVTerm()
@@ -140,8 +138,8 @@ printf(...)
                                            │ output_buffer │
                                            └───────────────┘
                                                    │
-                                                   │ flushOutputBuffer()
-                                                   │ and putchar(char)
+                                                   │ flush()
+                                                   │
                                                    ▼
                                            ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                            ▌               ▐
@@ -154,7 +152,7 @@ printf(...)
                                                ▀▀▀▀▀▀▀▀▀
 </pre>
 
-## Class digramm
+## Class Digramm
 
 <pre style="line-height: 1 !important;">
     ┌────────────┐1
@@ -282,10 +280,10 @@ printf(...)
                                                    └────────────────┘
 </pre>
 
-## Please send bug reports to
+## Contributing and reporting bugs
 
-https://github.com/gansm/finalcut/issues
+We encourage community involvement in improving FINAL CUT. If you find bugs or [issues](https://github.com/gansm/finalcut/issues), report them here. For contributions, please review our [Contributing Guidelines](Contributing.md).
 
 ## License
 
-Licensed under the [GNU Lesser General Public License, Version 3.0](LICENSE) <a href="https://www.gnu.org/licenses/lgpl-3.0-standalone.html"><img width="200" align="right" src="https://upload.wikimedia.org/wikipedia/commons/3/3b/LGPLv3_Logo.svg" alt="LGPLv3" data-canonical-src="https://upload.wikimedia.org/wikipedia/commons/3/3b/LGPLv3_Logo.svg"></a>
+FINAL CUT is licensed under the GNU Lesser General Public License v3.0. See the [LGPL v3.0 license page](https://www.gnu.org/licenses/lgpl-3.0-standalone.html) for more details. <a href="https://www.gnu.org/licenses/lgpl-3.0-standalone.html"><img width="200" align="right" src="https://upload.wikimedia.org/wikipedia/commons/3/3b/LGPLv3_Logo.svg" alt="LGPLv3" data-canonical-src="https://upload.wikimedia.org/wikipedia/commons/3/3b/LGPLv3_Logo.svg"></a>

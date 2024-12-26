@@ -3,7 +3,7 @@
 *                                                                      *
 * This file is part of the FINAL CUT widget toolkit                    *
 *                                                                      *
-* Copyright 2015-2023 Markus Gans                                      *
+* Copyright 2015-2024 Markus Gans                                      *
 *                                                                      *
 * FINAL CUT is free software; you can redistribute it and/or modify    *
 * it under the terms of the GNU Lesser General Public License as       *
@@ -139,6 +139,9 @@ class FMenu : public FWindow
     void cb_menuitemToggled (const FMenuItem*) const;
 
   private:
+    // Using-declaration
+    using KeyMap = std::unordered_map<FKey, std::function<void(FKeyEvent*)>, EnumHash<FKey>>;
+
     // Enumeration
     enum class SelectItem { No, Yes };
 
@@ -180,13 +183,18 @@ class FMenu : public FWindow
     auto isMouseOverSubMenu (const FPoint&) -> bool;
     auto isMouseOverSuperMenu (const FPoint&) -> bool;
     auto isMouseOverMenuBar (const FPoint&) const -> bool;
+    auto isMetaNumberKey (const FKey&) const -> bool;
 
     // Methods
     void init();
+    void handleParentWidget();
     void initCallbacks();
+    void mapKeyFunctions();
     void calculateDimensions();
+    auto calculateMaxItemWidth() const -> std::size_t;
+    void setPositionsOfAllItems() const;
     void adjustItems() const;
-    auto adjustX(int) const -> int;
+    auto adjustX (int) const -> int;
     void openSubMenu (FMenu*, SelectItem);
     void closeOpenedSubMenu();
     void hideSubMenus();
@@ -197,8 +205,11 @@ class FMenu : public FWindow
     void mouseDownSelection (FMenuItem*, bool&);
     auto mouseUpOverList (const FPoint&) -> bool;
     auto initializeMouseStates (const FMouseEvent*) -> MouseStates;
-    void handleCloseSubMenu (const MouseStates& ms);
+    void handleCloseSubMenu (const MouseStates&);
+    void handleMouseMoveEvent (const FMouseEvent*);
     void mouseMoveOverList (const FPoint&, MouseStates&);
+    auto handleMenuHierarchyEvents (const MouseStates&, const FMouseEvent*) -> bool;
+    void processMenuBorderEvents (MouseStates&) const;
     void mouseMoveSelection (FMenuItem*, MouseStates&);
     void mouseMoveDeselection (FMenuItem*, MouseStates&);
     void mouseUpOverBorder();
@@ -224,7 +235,13 @@ class FMenu : public FWindow
     void drawSeparator (int);
     void drawMenuLine (FMenuItem*, int);
     void drawCheckMarkPrefix (const FMenuItem*);
+    void printChecked (bool);
+    void printUnchecked();
+    void printBullet();
+    void printCheckMark();
     void drawMenuText (MenuText&);
+    auto isCharacterInvalid (wchar_t) const -> bool;
+    void printHotkey (const MenuText&, wchar_t);
     void drawSubMenuIndicator (std::size_t&);
     void drawAcceleratorKey (std::size_t&, FKey);
     void drawTrailingSpaces (std::size_t);
@@ -237,6 +254,7 @@ class FMenu : public FWindow
     void processActivate() const;
 
     // Data members
+    KeyMap       key_map{};
     FMenuItem    menuitem{};
     FWidget*     super_menu{nullptr};
     FMenu*       opened_sub_menu{nullptr};

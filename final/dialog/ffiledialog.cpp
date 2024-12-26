@@ -291,7 +291,7 @@ inline void FFileDialog::widgetSettings (const FPoint& pos)
     open_btn.setText ("&Open");
 
   open_btn.setGeometry(FPoint{30, 10}, FSize{9, 1});
-  setGeometry (pos, getSize());
+  FWindow::setGeometry (pos, getSize());
 }
 
 //----------------------------------------------------------------------
@@ -802,7 +802,7 @@ void FFileDialog::cb_processActivate()
 {
   if ( isFilterInput() )
     activateNewFilter();
-  else if ( filename.getText().getLength() == 0 )
+  else if ( filename.getText().isEmpty() )
     activateDefaultFilter();
   else if ( isDirectoryInput() )
     changeDir(filename.getText().trim());

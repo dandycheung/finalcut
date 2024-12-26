@@ -68,8 +68,9 @@ class FScrollView : public FWidget
 {
   public:
     // Using-declaration
-    using FWidget::setGeometry;
+    using FWidget::delAccelerator;
     using FWidget::print;
+    using FWidget::setGeometry;
 
     // Constructor
     explicit FScrollView (FWidget* = nullptr);
@@ -179,6 +180,7 @@ class FScrollView : public FWidget
 
     // Methods
     void init();
+    void addLocalPreprocessingHandler();
     void createViewport (const FSize&) noexcept;
     void drawText (const FString&, std::size_t);
     auto getDisplayedTextLength (const FString&, const std::size_t) const -> std::size_t;
@@ -317,7 +319,7 @@ inline void FScrollView::initScrollbar ( FScrollbarPtr& bar
                                        , Callback cb_handler )
 {
   finalcut::initScrollbar (bar, o, this, cb_handler);
-  FTermArea* area = getPrintArea();
+  FTermArea* area = FScrollView::getPrintArea();
   finalcut::setPrintArea (*bar, area);
 }
 

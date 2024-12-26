@@ -3,7 +3,7 @@
 *                                                                      *
 * This file is part of the FINAL CUT widget toolkit                    *
 *                                                                      *
-* Copyright 2012-2023 Markus Gans                                      *
+* Copyright 2012-2024 Markus Gans                                      *
 *                                                                      *
 * FINAL CUT is free software; you can redistribute it and/or modify    *
 * it under the terms of the GNU Lesser General Public License as       *
@@ -60,6 +60,9 @@ namespace finalcut
 class FButton : public FWidget
 {
   public:
+    // Using-declaration
+    using FWidget::delAccelerator;
+
     // Constructors
     explicit FButton (FWidget* = nullptr);
     explicit FButton (FString&&, FWidget* = nullptr);
@@ -135,6 +138,9 @@ class FButton : public FWidget
     void setCursorPositionOnButton();
     void modifyStyle() const;
     void printButtonText (const FString&, std::size_t&);
+    auto hasMoreCharacter (std::size_t, std::size_t) const -> bool;
+    void setHotkeyStyle() const;
+    void resetHotkeyStyle() const;
     void printEllipsis();
     void resetStyle() const;
     void printTrailingSpaces (std::size_t);

@@ -58,9 +58,9 @@ FMenuBar::~FMenuBar()  // destructor
 //----------------------------------------------------------------------
 void FMenuBar::resetColors()
 {
-  const auto& wc = getColorTheme();
-  setForegroundColor (wc->menu.fg);
-  setBackgroundColor (wc->menu.bg);
+  const auto& wc_menu = getColorTheme()->menu;
+  FWidget::setForegroundColor (wc_menu.fg);
+  FWidget::setBackgroundColor (wc_menu.bg);
   FWidget::resetColors();
 }
 
@@ -74,9 +74,9 @@ void FMenuBar::resetMenu()
 //----------------------------------------------------------------------
 void FMenuBar::hide()
 {
-  const auto& wc = getColorTheme();
-  const auto& fg = wc->term.fg;
-  const auto& bg = wc->term.bg;
+  const auto& wc_term = getColorTheme()->term;
+  const auto& fg = wc_term.fg;
+  const auto& bg = wc_term.bg;
   setColor (fg, bg);
   print() << FPoint{1, 1} << FString{getDesktopWidth(), L' '};
   FWindow::hide();
@@ -94,39 +94,10 @@ void FMenuBar::onKeyPress (FKeyEvent* ev)
 {
   const auto& key = ev->key();
 
-  if ( isEnterKey(key)
-    || key == FKey::Up
-    || key == FKey::Down )
-  {
-    if ( hasSelectedItem() )
-    {
-      auto sel_item = getSelectedItem();
+  if ( handleActivateKey(ev) || handleNavigationKey(ev) )
+    return;
 
-      if ( sel_item->hasMenu() )
-      {
-        openMenu (sel_item);
-      }
-      else if ( isEnterKey(key) )
-      {
-        unselectItem();
-        redraw();
-        sel_item->processClicked();
-      }
-    }
-
-    ev->accept();
-  }
-  else if ( isFocusNextKey(key) )
-  {
-    selectNextItem();
-    ev->accept();
-  }
-  else if ( isFocusPrevKey(key) )
-  {
-    selectPrevItem();
-    ev->accept();
-  }
-  else if ( isEscapeKey(key) )
+  if ( isEscapeKey(key) )
   {
     leaveMenuBar();
     ev->accept();
@@ -225,15 +196,15 @@ void FMenuBar::init()
   // initialize geometry values
   FWindow::setGeometry (FPoint{1, 1}, FSize{w, 1}, false);
   setAlwaysOnTop();
-  setMenuBar(this);
+  FWidget::setMenuBar(this);
   ignorePadding();
 
   if ( getRootWidget() )
     getRootWidget()->setTopPadding(1, true);
 
-  addAccelerator (FKey::F10);
-  addAccelerator (FKey::Ctrl_space);
-  addAccelerator (FKey::Menu);
+  FMenuBar::addAccelerator (FKey::F10, this);
+  FMenuBar::addAccelerator (FKey::Ctrl_space, this);
+  FMenuBar::addAccelerator (FKey::Menu, this);
   FMenuBar::resetColors();
   unsetFocusable();
 }
@@ -395,8 +366,8 @@ inline void FMenuBar::drawItem (FMenuItem* menuitem, std::size_t& x)
   drawEllipsis (txtdata, x);
   drawTrailingSpace (x);
 
-  const auto& wc = getColorTheme();
-  setColor (wc->menu.fg, wc->menu.bg);
+  const auto& wc_menu = getColorTheme()->menu;
+  setColor (wc_menu.fg, wc_menu.bg);
 
   if ( FVTerm::getFOutput()->isMonochron() && is_enabled && is_selected )
     setReverse(true);
@@ -407,7 +378,7 @@ inline void FMenuBar::setLineAttributes (const FMenuItem* menuitem)
 {
   bool is_enabled  = menuitem->isEnabled();
   bool is_selected = menuitem->isSelected();
-  const auto& wc = getColorTheme();
+  const auto& wc_menu = getColorTheme()->menu;
 
   if ( is_enabled )
   {
@@ -416,19 +387,19 @@ inline void FMenuBar::setLineAttributes (const FMenuItem* menuitem)
       if ( FVTerm::getFOutput()->isMonochron() )
         setReverse(false);
 
-      setForegroundColor (wc->menu.focus_fg);
-      setBackgroundColor (wc->menu.focus_bg);
+      setForegroundColor (wc_menu.focus_fg);
+      setBackgroundColor (wc_menu.focus_bg);
     }
     else
     {
-      setForegroundColor (wc->menu.fg);
-      setBackgroundColor (wc->menu.bg);
+      setForegroundColor (wc_menu.fg);
+      setBackgroundColor (wc_menu.bg);
     }
   }
   else
   {
-    setForegroundColor (wc->menu.inactive_fg);
-    setBackgroundColor (wc->menu.inactive_bg);
+    setForegroundColor (wc_menu.inactive_fg);
+    setBackgroundColor (wc_menu.inactive_bg);
   }
 
   setColor();
@@ -473,8 +444,8 @@ inline void FMenuBar::drawMenuText (menuText& data)
 
     if ( z == data.hotkeypos )
     {
-      const auto& wc = getColorTheme();
-      setColor (wc->menu.hotkey_fg, wc->menu.hotkey_bg);
+      const auto& wc_menu = getColorTheme()->menu;
+      setColor (wc_menu.hotkey_fg, wc_menu.hotkey_bg);
 
       if ( ! data.no_underline )
         setUnderline();
@@ -670,6 +641,58 @@ void FMenuBar::unselectMenuItem (FMenuItem* item)
 }
 
 //----------------------------------------------------------------------
+inline auto FMenuBar::handleActivateKey (FKeyEvent* ev) -> bool
+{
+  const auto& key = ev->key();
+
+  if ( ! isEnterKey(key)
+    && key != FKey::Up
+    && key != FKey::Down )
+    return false;
+
+  if ( ! hasSelectedItem() )
+    return false;
+
+  auto sel_item = getSelectedItem();
+
+  if ( sel_item->hasMenu() )
+  {
+    openMenu (sel_item);
+  }
+  else if ( isEnterKey(key) )
+  {
+    unselectItem();
+    redraw();
+    sel_item->processClicked();
+  }
+
+  ev->accept();
+  return true;
+}
+
+//----------------------------------------------------------------------
+inline auto FMenuBar::handleNavigationKey (FKeyEvent* ev) -> bool
+{
+  const auto& key = ev->key();
+
+  if ( isFocusNextKey(key) )
+  {
+    selectNextItem();
+    ev->accept();
+    return true;
+  }
+
+  if ( isFocusPrevKey(key) )
+  {
+    selectPrevItem();
+    ev->accept();
+    return true;
+  }
+
+  return false;
+}
+
+//----------------------------------------------------------------------
 inline auto FMenuBar::isClickOnMenuEntry ( const FMouseEvent* ev
                                          , const FMenuItem* item ) const -> bool
 {
@@ -680,6 +703,20 @@ inline auto FMenuBar::isClickOnMenuEntry ( const FMouseEvent* ev
   return mouse_x >= x1
       && mouse_x < x2
       && mouse_y == 1;
+}
+
+//----------------------------------------------------------------------
+inline auto FMenuBar::isMouseOverMenuBar (const FMouseEvent& ev) -> bool
+{
+  const auto& geometry = getTermGeometry();
+  return geometry.contains(ev.getTermPos());
+}
+
+//----------------------------------------------------------------------
+inline auto FMenuBar::isMouseOverMenu (FMenu* menu, const FMouseEvent& ev) const -> bool
+{
+  const auto& menu_geometry = menu->getTermGeometry();
+  return menu_geometry.contains(ev.getTermPos());
 }
 
 //----------------------------------------------------------------------
@@ -694,25 +731,17 @@ void FMenuBar::mouseDownOverList (const FMouseEvent* ev)
 
   for (auto&& item : list)
   {
-    if ( ev->getY() == 1 )
-    {
-      if ( isClickOnMenuEntry(ev, item) )
-        selectMenuItem (item);  // Mouse pointer over item
-      else
-        unselectMenuItem (item);
-    }
+    if ( ev->getY() != 1 )
+      continue;
+
+    if ( isClickOnMenuEntry(ev, item) )
+      selectMenuItem (item);  // Mouse pointer over item
+    else
+      unselectMenuItem (item);
   }
 
-  if ( getStatusBar() )
-  {
-    if ( ! hasSelectedItem() )
-      getStatusBar()->clearMessage();
-
-    getStatusBar()->drawMessage();
-  }
-
-  if ( focus_changed )
-    redraw();
+  updateStatusBar();
+  handleFocusChange();
 }
 
 //----------------------------------------------------------------------
@@ -753,10 +782,7 @@ void FMenuBar::mouseMoveOverList (const FMouseEvent& ev)
     return;
 
   focus_changed = false;
-  bool mouse_over_menubar{false};
-
-  if ( getTermGeometry().contains(ev.getTermPos()) )
-    mouse_over_menubar = true;
+  bool mouse_over_menubar = isMouseOverMenuBar(ev);
 
   for (auto&& item : list)
   {
@@ -765,34 +791,20 @@ void FMenuBar::mouseMoveOverList (const FMouseEvent& ev)
       // Mouse pointer over item
       selectMenuItem(item);
     }
+    else if ( mouse_over_menubar )
+    {
+      // Unselect selected item without mouse focus
+      unselectMenuItem(item);
+    }
     else
     {
-      if ( mouse_over_menubar )
-      {
-        // Unselect selected item without mouse focus
-        unselectMenuItem(item);
-      }
-      else
-      {
-        // Event handover to the menu
-        passEventToMenu(ev);
-      }
+      // Event handover to the menu
+      passEventToMenu(ev);
     }
   }
 
-  if ( getStatusBar() )
-  {
-    if ( ! hasSelectedItem() )
-      getStatusBar()->clearMessage();
-
-    getStatusBar()->drawMessage();
-  }
-
-  if ( focus_changed )
-  {
-    redraw();
-    forceTerminalUpdate();
-  }
+  updateStatusBar();
+  handleFocusChange();
 }
 
 //----------------------------------------------------------------------
@@ -803,10 +815,8 @@ void FMenuBar::passEventToMenu (const FMouseEvent& ev) const
 
   // Mouse event handover to the menu
   auto menu = getSelectedItem()->getMenu();
-  const auto& menu_geometry = menu->getTermGeometry();
 
-  if ( menu->getCount() > 0
-    && menu_geometry.contains(ev.getTermPos()) )
+  if ( menu->getCount() > 0 && isMouseOverMenu(menu, ev) )
   {
     const auto& t = ev.getTermPos();
     const auto& p = menu->termToWidgetPos(t);
@@ -817,6 +827,16 @@ void FMenuBar::passEventToMenu (const FMouseEvent& ev) const
     setClickedWidget(menu);
     menu->onMouseMove(_ev.get());
   }
+}
+
+//----------------------------------------------------------------------
+void FMenuBar::handleFocusChange()
+{
+  if ( ! focus_changed )
+    return;
+
+  redraw();
+  forceTerminalUpdate();
 }
 
 //----------------------------------------------------------------------
@@ -831,6 +851,18 @@ void FMenuBar::leaveMenuBar()
   switchToPrevWindow(this);
   drawStatusBarMessage();
   mouse_down = false;
+}
+
+//----------------------------------------------------------------------
+void FMenuBar::updateStatusBar() const
+{
+  if ( ! getStatusBar() )
+    return;
+
+  if ( ! hasSelectedItem() )
+    getStatusBar()->clearMessage();
+
+  getStatusBar()->drawMessage();
 }
 
 }  // namespace finalcut

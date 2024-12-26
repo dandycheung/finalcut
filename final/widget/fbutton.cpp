@@ -3,7 +3,7 @@
 *                                                                      *
 * This file is part of the FINAL CUT widget toolkit                    *
 *                                                                      *
-* Copyright 2012-2023 Markus Gans                                      *
+* Copyright 2012-2024 Markus Gans                                      *
 *                                                                      *
 * FINAL CUT is free software; you can redistribute it and/or modify    *
 * it under the terms of the GNU Lesser General Public License as       *
@@ -54,7 +54,7 @@ FButton::FButton (FString&& txt, FWidget* parent)
 //----------------------------------------------------------------------
 FButton::~FButton()  // destructor
 {
-  delAccelerator();
+  FButton::delAccelerator(this);
   delOwnTimers();
 }
 
@@ -132,14 +132,14 @@ void FButton::setInactiveBackgroundColor (FColor color)
 //----------------------------------------------------------------------
 void FButton::resetColors()
 {
-  const auto& wc = getColorTheme();
-  FButton::setForegroundColor (wc->button.fg);
-  FButton::setBackgroundColor (wc->button.bg);
-  FButton::setHotkeyForegroundColor (wc->button.hotkey_fg);
-  FButton::setFocusForegroundColor (wc->button.focus_fg);
-  FButton::setFocusBackgroundColor (wc->button.focus_bg);
-  FButton::setInactiveForegroundColor (wc->button.inactive_fg);
-  FButton::setInactiveBackgroundColor (wc->button.inactive_bg);
+  const auto& wc_button = getColorTheme()->button;
+  FButton::setForegroundColor (wc_button.fg);
+  FButton::setBackgroundColor (wc_button.bg);
+  FButton::setHotkeyForegroundColor (wc_button.hotkey_fg);
+  FButton::setFocusForegroundColor (wc_button.focus_fg);
+  FButton::setFocusBackgroundColor (wc_button.focus_bg);
+  FButton::setInactiveForegroundColor (wc_button.inactive_fg);
+  FButton::setInactiveBackgroundColor (wc_button.inactive_bg);
   FWidget::resetColors();
 }
 
@@ -205,9 +205,9 @@ void FButton::hide()
   }
   else
   {
-    const auto& wc = getColorTheme();
-    FColor fg = wc->dialog.fg;
-    FColor bg = wc->dialog.bg;
+    const auto& wc_dialog = getColorTheme()->dialog;
+    FColor fg = wc_dialog.fg;
+    FColor bg = wc_dialog.bg;
     setColor (fg, bg);
   }
 
@@ -220,7 +220,7 @@ void FButton::hide()
 
   for (std::size_t y{0}; y < getHeight() + s + (f << 1u); y++)
   {
-    print() << FPoint{1 - int(f), 1 + int(y - f)}
+    print() << FPoint{1 - int(f), 1 + int(y) - int(f)}
             << FString{size, L' '};
   }
 }
@@ -359,9 +359,9 @@ void FButton::onFocusOut (FFocusEvent* out_ev)
 //----------------------------------------------------------------------
 void FButton::init()
 {
-  const auto& wc = getColorTheme();
-  button_fg = wc->button.fg;
-  button_bg = wc->button.bg;
+  const auto& wc_button = getColorTheme()->button;
+  button_fg = wc_button.fg;
+  button_bg = wc_button.bg;
   FButton::resetColors();
   setShadow();
 
@@ -380,7 +380,7 @@ inline void FButton::detectHotkey()
 {
   if ( isEnabled() )
   {
-    delAccelerator();
+    FButton::delAccelerator(this);
     setHotkeyAccelerator();
   }
 }
@@ -532,33 +532,17 @@ inline void FButton::printButtonText ( const FString& button_text
   std::size_t idx{0};
   std::size_t columns{0};
 
-  while ( pos < center_offset + column_width && columns + 2 < getWidth() )
+  while ( hasMoreCharacter(pos, columns) )
   {
     if ( idx == hotkeypos && getFlags().feature.active )
     {
-      // Modify colors and style on the hotkey position
-      setColor (button_hotkey_fg, button_bg);
-
-      if ( ! active_focus && FVTerm::getFOutput()->getMaxColor() < 16 )
-        setBold();
-
-      if ( ! getFlags().feature.no_underline )
-        setUnderline();
-
-      print (button_text[idx]);
-
-      // Reset style and color after the hotkey position
-      if ( ! active_focus && FVTerm::getFOutput()->getMaxColor() < 16 )
-        unsetBold();
-
-      if ( ! getFlags().feature.no_underline )
-        unsetUnderline();
-
-      setColor (button_fg, button_bg);
+      setHotkeyStyle();
+      print (button_text[idx]);  // Print hotkey character
+      resetHotkeyStyle();
     }
     else
     {
-      print (button_text[idx]);  // Print button text
+      print (button_text[idx]);  // Print button character
     }
 
     const auto char_width = getColumnWidth(button_text[idx]);
@@ -566,6 +550,39 @@ inline void FButton::printButtonText ( const FString& button_text
     pos += char_width;
     idx++;
   }
+}
+
+//----------------------------------------------------------------------
+inline auto FButton::hasMoreCharacter (std::size_t pos, std::size_t columns) const -> bool
+{
+  return pos < center_offset + column_width
+      && columns + 2 < getWidth();
+}
+
+//----------------------------------------------------------------------
+inline void FButton::setHotkeyStyle() const
+{
+  // Modify colors and style on the hotkey position
+  setColor (button_hotkey_fg, button_bg);
+
+  if ( ! active_focus && FVTerm::getFOutput()->getMaxColor() < 16 )
+    setBold();
+
+  if ( ! getFlags().feature.no_underline )
+    setUnderline();
+}
+
+//----------------------------------------------------------------------
+inline void FButton::resetHotkeyStyle() const
+{
+  // Reset style and color after the hotkey position
+  if ( ! active_focus && FVTerm::getFOutput()->getMaxColor() < 16 )
+    unsetBold();
+
+  if ( ! getFlags().feature.no_underline )
+    unsetUnderline();
+
+  setColor (button_fg, button_bg);
 }
 
 //----------------------------------------------------------------------

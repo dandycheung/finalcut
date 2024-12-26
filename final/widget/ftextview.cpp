@@ -151,9 +151,9 @@ void FTextView::setGeometry ( const FPoint& pos, const FSize& size
 //----------------------------------------------------------------------
 void FTextView::resetColors()
 {
-  const auto& wc = getColorTheme();
-  setForegroundColor (wc->text.fg);
-  setBackgroundColor (wc->text.bg);
+  const auto& wc_text = getColorTheme()->text;
+  FWidget::setForegroundColor (wc_text.fg);
+  FWidget::setBackgroundColor (wc_text.bg);
   FWidget::resetColors();
 }
 
@@ -774,8 +774,8 @@ inline void FTextView::addHighlighting ( FVTermBuffer& line_buffer
         break;
 
       auto& fchar = line_buffer[index];
-      fchar.fg_color = hgl.attributes.fg_color;
-      fchar.bg_color = hgl.attributes.bg_color;
+      fchar.color.pair.fg = hgl.attributes.color.pair.fg;
+      fchar.color.pair.bg = hgl.attributes.color.pair.bg;
       fchar.attr = hgl.attributes.attr;
     }
   }
@@ -800,14 +800,14 @@ inline void FTextView::addSelection (FVTermBuffer& line_buffer, std::size_t n) c
                               ? start_column - col_pos : 0U;
   const std::size_t end_col = (end_column >= col_pos)
                             ? end_column - col_pos + 1 : 0U;
-  const auto& wc = getColorTheme();
+  const auto& wc_text = getColorTheme()->text;
   const auto has_focus = hasFocus();
   const auto& selected_fg = has_focus
-                          ? wc->text.selected_focus_fg
-                          : wc->text.selected_fg;
+                          ? wc_text.selected_focus_fg
+                          : wc_text.selected_fg;
   const auto& selected_bg = has_focus
-                          ? wc->text.selected_focus_bg
-                          : wc->text.selected_bg;
+                          ? wc_text.selected_focus_bg
+                          : wc_text.selected_bg;
   const std::size_t start_index = (n == start_row) ? start_col : 0U;
   const std::size_t end_index = (n == end_row)
                               ? std::min(end_col, line_buffer.getLength())
@@ -815,8 +815,8 @@ inline void FTextView::addSelection (FVTermBuffer& line_buffer, std::size_t n) c
 
   auto select = [&selected_fg, &selected_bg] (auto& fchar)
   {
-    fchar.fg_color = selected_fg;
-    fchar.bg_color = selected_bg;
+    fchar.color.pair.fg = selected_fg;
+    fchar.color.pair.bg = selected_bg;
   };
 
   std::for_each (&line_buffer[start_index], &line_buffer[end_index], select);

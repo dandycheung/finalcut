@@ -1,22 +1,49 @@
-2023-04-04  Markus Gans  <guru.mail@muenster.de>
+2024-12-24  Markus Gans  <guru.mail@muenster.de>
+	* Better FChar color value direct access
+
+2024-11-29  Markus Gans  <guru.mail@muenster.de>
+	* Fix misaligned FScrollView viewport when using ignorePadding()
+
+2024-11-18  Markus Gans  <guru.mail@muenster.de>
+	* Added examples/widget-colors to show the internal predefined 
+	  colors of the widgets
+
+2024-11-06  Markus Gans  <guru.mail@muenster.de>
+	* Fix FComboBox widget list expansion
+
+2024-11-05  Markus Gans  <guru.mail@muenster.de>
+	* Added the getSelf() method to FObject
+
+2024-09-21  Markus Gans  <guru.mail@muenster.de>
+	* Change the widget color theme for non-focused list items
+
+2024-07-21  Markus Gans  <guru.mail@muenster.de>
+	* The hasPreprocessingHandler() method has been added to FVTerm
+
+2024-07-07  Markus Gans  <guru.mail@muenster.de>
+	* Avoid left overflows in area changes for smaller dialogs 
+	  in drawGenericBox() and FScrollView::copy2area()
+	* Add a setWidth() and setHeight() method to FDialog
+
+2024-04-04  Markus Gans  <guru.mail@muenster.de>
 	* Avoid printing scrollbar overrun on emit callback
 
-2023-04-02  Markus Gans  <guru.mail@muenster.de>
+2024-04-02  Markus Gans  <guru.mail@muenster.de>
 	* Implementation of the mouse selection in the FTextView. Can be 
 	  activated by setSelectable()
 	* Add a setLines() method to FTextView
 
-2023-03-26  Markus Gans  <guru.mail@muenster.de>
+2024-03-26  Markus Gans  <guru.mail@muenster.de>
 	* Visual highlighting of the selected text in FTextView
 
-2023-03-25  Markus Gans  <guru.mail@muenster.de>
+2024-03-25  Markus Gans  <guru.mail@muenster.de>
 	* FTextView gets the ability to select text between a start and 
 	  end position
 
-2023-02-14  Markus Gans  <guru.mail@muenster.de>
+2024-02-14  Markus Gans  <guru.mail@muenster.de>
 	* Optimize FChar operations and processing
 
-2023-02-07  Markus Gans  <guru.mail@muenster.de>
+2024-02-07  Markus Gans  <guru.mail@muenster.de>
 	* Escape sequences can now be used to repeat UTF-8 characters, which 
 	  increases the display speed
 

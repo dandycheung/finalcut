@@ -150,7 +150,7 @@ class FWidget : public FVTerm
 
     // Accessors
     auto  getClassName() const -> FString override;
-    auto  getRootWidget() -> FWidget*;
+    auto  getRootWidget() const -> FWidget*;
     auto  getParentWidget() const -> FWidget*;
     static auto  getMainWidget() -> FWidget*&;
     static auto  getActiveWindow() -> FWidget*&;
@@ -521,13 +521,17 @@ class FWidget : public FVTerm
     static bool          init_desktop;
 
     // Friend functions
+    friend struct GenericBoxData;
+    friend struct GenericBlockShadowData;
     friend void  detectTerminalSize();
     friend void  drawShadow (FWidget*);
     friend void  drawTransparentShadow (FWidget*);
     friend void  drawGenericBox (FWidget*, const FRect&, const std::array<wchar_t, 8>&);
     friend void  drawGenericBlockShadow (FWidget*, const std::array<FChar, 4>&);
-    friend void  drawFlatBorder (FWidget*);
-    friend void  clearFlatBorder (FWidget*);
+    friend void  drawVerticalFlatBorder (FWidget*);
+    friend void  drawHorizontalFlatBorder (FWidget*);
+    friend void  clearVerticalFlatBorder (FWidget*);
+    friend void  clearHorizontalFlatBorder (FWidget*);
 };
 
 

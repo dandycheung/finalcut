@@ -14,6 +14,7 @@ noinst_PROGRAMS = \
 	background-color \
 	busy \
 	calculator \
+	cartesian_graph \
 	checklist \
 	choice \
 	dialog \
@@ -42,6 +43,7 @@ noinst_PROGRAMS = \
 	treeview \
 	ui \
 	watch \
+	widget-colors \
 	windows \
 	xpmview
 
@@ -49,10 +51,12 @@ noinst_PROGRAMS = \
 background_color_SOURCES = background-color.cpp
 busy_SOURCES = busy.cpp
 calculator_SOURCES = calculator.cpp
+cartesian_graph_SOURCES = cartesian_graph.cpp
 checklist_SOURCES = checklist.cpp
 choice_SOURCES = choice.cpp
 dialog_SOURCES = dialog.cpp
 event_log_SOURCES = event-log.cpp
+eventloop_LDADD = -lpthread
 eventloop_SOURCES = eventloop.cpp
 fullwidth_character_SOURCES = fullwidth-character.cpp
 hello_SOURCES = hello.cpp
@@ -77,6 +81,7 @@ transparent_SOURCES = transparent.cpp
 treeview_SOURCES = treeview.cpp
 ui_SOURCES = ui.cpp
 watch_SOURCES = watch.cpp
+widget_colors_SOURCES = widget-colors.cpp
 windows_SOURCES = windows.cpp
 xpmview_SOURCES = xpmview.cpp
 

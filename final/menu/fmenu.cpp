@@ -86,9 +86,9 @@ void FMenu::setStatusbarMessage (const FString& msg)
 //----------------------------------------------------------------------
 void FMenu::resetColors()
 {
-  const auto& wc = getColorTheme();
-  setForegroundColor (wc->menu.fg);
-  setBackgroundColor (wc->menu.bg);
+  const auto& wc_menu = getColorTheme()->menu;
+  FWidget::setForegroundColor (wc_menu.fg);
+  FWidget::setBackgroundColor (wc_menu.bg);
   FWidget::resetColors();
 }
 
@@ -140,27 +140,15 @@ void FMenu::onKeyPress (FKeyEvent* ev)
   const auto key = ev->key();
   // Ignore these keys:
   //   Dialog Switch Accelerator Handling in FApplication
-  std::array<FKey, 9> ignore_list =  //  Meta-1..9
-  {{
-    FKey::Meta_1, FKey::Meta_2, FKey::Meta_3,
-    FKey::Meta_4, FKey::Meta_5, FKey::Meta_6,
-    FKey::Meta_7, FKey::Meta_8, FKey::Meta_9
-  }};
-
-  if ( std::any_of( std::cbegin(ignore_list)
-                  , std::cend(ignore_list)
-                  , [&key] (const auto& k) { return key == k; } ) )
+  if ( isMetaNumberKey(key) )
     return;
 
-  if ( key == FKey::Up )
-    selectPrevItem();
-  else if ( key == FKey::Down )
-    selectNextItem();
-  else if ( key == FKey::Left )
-    selectPrevMenu(ev);
-  else if ( key == FKey::Right )
-    selectNextMenu(ev);
-  else if ( isEnterKey(key) )
+  const auto& iter = key_map.find(key);
+
+  if ( iter != key_map.end() )
+    iter->second(ev);
+
+  if ( isEnterKey(key) )
     acceptSelection();
   else if ( isEscapeKey(key) )
     closeMenu();
@@ -243,29 +231,7 @@ void FMenu::onMouseMove (FMouseEvent* ev)
   if ( !  mouse_down || getItemList().empty() )
     return;
 
-  MouseStates ms = initializeMouseStates(ev);
-
-  shown_sub_menu = nullptr;
-
-  // Mouse pointer over an entry in the menu list
-  mouseMoveOverList (ev->getPos(), ms);
-
-  if ( handleSubMenuEvent(ms, *ev)    // Event handover to sub-menu
-    || handleSuperMenuEvent(ms, *ev)  // Event handover to super-menu
-    || handleMenuBarEvent(ms, *ev) )  // Event handover to the menu bar
-  {
-    return;
-  }
-
-  if ( ! hasSelectedItem() && ms.mouse_over_menu )
-  {
-    mouseMoveOverBorder(ms);  // Mouse is over border or separator
-  }
-
-  if ( ms.focus_changed )
-    redraw();
-
-  handleCloseSubMenu(ms);
+  handleMouseMoveEvent(ev);
 }
 
 //----------------------------------------------------------------------
@@ -379,6 +345,21 @@ auto FMenu::isMouseOverMenuBar (const FPoint& termpos) const -> bool
 }
 
 //----------------------------------------------------------------------
+inline auto FMenu::isMetaNumberKey (const FKey& key) const -> bool
+{
+  std::array<FKey, 9> key_list =  //  Meta-1..9
+  {{
+    FKey::Meta_1, FKey::Meta_2, FKey::Meta_3,
+    FKey::Meta_4, FKey::Meta_5, FKey::Meta_6,
+    FKey::Meta_7, FKey::Meta_8, FKey::Meta_9
+  }};
+
+  return std::any_of ( std::cbegin(key_list)
+                     , std::cend(key_list)
+                     , [&key] (const auto& k) { return key == k; } );
+}
+
+//----------------------------------------------------------------------
 void FMenu::init()
 {
   setTopPadding(1);
@@ -391,26 +372,32 @@ void FMenu::init()
   FMenu::hide();
   FMenu::resetColors();
   menuitem.setMenu(this);
+  handleParentWidget();
+  initCallbacks();
+  mapKeyFunctions();
+  calculateDimensions();
+}
+
+//----------------------------------------------------------------------
+inline void FMenu::handleParentWidget()
+{
   const auto& parent = getParentWidget();
 
-  if ( parent )
-  {
-    if ( isMenuBar(parent) )
-    {
-      auto mbar = static_cast<FMenuBar*>(parent);
-      mbar->calculateDimensions();
-    }
-    else if ( isMenu(parent) )
-    {
-      auto smenu = static_cast<FMenu*>(parent);
-      smenu->calculateDimensions();
-    }
+  if ( ! parent )
+    return;
 
-    setSuperMenu(parent);
+  if ( isMenuBar(parent) )
+  {
+    auto mbar = static_cast<FMenuBar*>(parent);
+    mbar->calculateDimensions();
+  }
+  else if ( isMenu(parent) )
+  {
+    auto smenu = static_cast<FMenu*>(parent);
+    smenu->calculateDimensions();
   }
 
-  initCallbacks();
-  calculateDimensions();
+  setSuperMenu(parent);
 }
 
 //----------------------------------------------------------------------
@@ -430,18 +417,46 @@ void FMenu::initCallbacks()
 }
 
 //----------------------------------------------------------------------
+inline void FMenu::mapKeyFunctions()
+{
+  key_map =
+  {
+    { FKey::Up    , [this] (const FKeyEvent*) { selectPrevItem(); } },
+    { FKey::Down  , [this] (const FKeyEvent*) { selectNextItem(); } },
+    { FKey::Left  , [this] (FKeyEvent* ev)    { selectPrevMenu(ev); } },
+    { FKey::Right , [this] (FKeyEvent* ev)    { selectNextMenu(ev); } }
+  };
+}
+
+//----------------------------------------------------------------------
 void FMenu::calculateDimensions()
 {
-  max_item_width = 10;  // minimum width
+  max_item_width = calculateMaxItemWidth();
+  const int adjust_X = adjustX(getX());
+
+  // Set widget geometry
+  FWindow::setGeometry
+  (
+    FPoint{adjust_X, getY()},
+    FSize{max_item_width + 2, getCount() + 2}
+  );
+
+  // Position items and submenus
+  setPositionsOfAllItems();
+}
+
+//----------------------------------------------------------------------
+auto FMenu::calculateMaxItemWidth() const -> std::size_t
+{
+  std::size_t max_width = 10;  // minimum width
 
   // find the maximum item width
   for (auto&& item : getItemList())
   {
     std::size_t item_width = item->getTextWidth() + 2;
     const auto& accel_key = item->accel_key;
-    const bool has_menu = item->hasMenu();
 
-    if ( has_menu )
+    if ( item->hasMenu() )
     {
       item_width += 3;
     }
@@ -454,33 +469,31 @@ void FMenu::calculateDimensions()
     if ( has_checkable_items )
       item_width++;
 
-    if ( item_width > max_item_width )
-      max_item_width = item_width;
+    max_width = std::max(max_width, item_width);
   }
 
-  const int adjust_X = adjustX(getX());
+  return max_width;
+}
 
-  // set widget geometry
-  setGeometry ( FPoint{adjust_X, getY()}
-              , FSize{max_item_width + 2, getCount() + 2} );
-
-  // set geometry of all items
+//----------------------------------------------------------------------
+void FMenu::setPositionsOfAllItems() const
+{
+  // Set geometry of all items
   const int item_X = 1;
   int item_Y = 1;
 
   for (auto&& item : getItemList())
   {
     item->setGeometry (FPoint{item_X, item_Y}, FSize{max_item_width, 1});
+    item_Y++;
 
     if ( item->hasMenu() )
     {
       const int menu_X = getTermX() + int(max_item_width) + 1;
       const int menu_Y = item->getTermY() - 2;
-      // set sub-menu position
+      // Set sub-menu position
       item->getMenu()->setPos (FPoint{menu_X, menu_Y}, false);
     }
-
-    item_Y++;
   }
 }
 
@@ -752,7 +765,27 @@ inline void FMenu::handleCloseSubMenu (const MouseStates& ms)
 }
 
 //----------------------------------------------------------------------
-void FMenu::mouseMoveOverList (const FPoint& mouse_pos, MouseStates& ms)
+void FMenu::handleMouseMoveEvent (const FMouseEvent* ev)
+{
+  MouseStates ms = initializeMouseStates(ev);
+  shown_sub_menu = nullptr;
+
+  // Mouse pointer over an entry in the menu list
+  mouseMoveOverList (ev->getPos(), ms);
+
+  if ( handleMenuHierarchyEvents(ms, ev) )
+    return;
+
+  processMenuBorderEvents(ms);
+
+  if ( ms.focus_changed )
+    redraw();
+
+  handleCloseSubMenu(ms);
+}
+
+//----------------------------------------------------------------------
+inline void FMenu::mouseMoveOverList (const FPoint& mouse_pos, MouseStates& ms)
 {
   for (auto&& item : getItemList())
   {
@@ -761,6 +794,23 @@ void FMenu::mouseMoveOverList (const FPoint& mouse_pos, MouseStates& ms)
     else
       mouseMoveDeselection (item, ms);
   }
+}
+
+//----------------------------------------------------------------------
+inline auto FMenu::handleMenuHierarchyEvents (const MouseStates& ms, const FMouseEvent* ev) -> bool
+{
+  return handleSubMenuEvent(ms, *ev)    // Event handover to sub-menu
+      || handleSuperMenuEvent(ms, *ev)  // Event handover to super-menu
+      || handleMenuBarEvent(ms, *ev);   // Event handover to the menu bar
+}
+
+//----------------------------------------------------------------------
+inline void FMenu::processMenuBorderEvents (MouseStates& ms) const
+{
+  if ( hasSelectedItem() || ! ms.mouse_over_menu )
+    return;
+
+  mouseMoveOverBorder(ms);  // Mouse is over border or separator
 }
 
 //----------------------------------------------------------------------
@@ -1030,8 +1080,8 @@ auto FMenu::hotkeyMenu (FKeyEvent* ev) -> bool
 void FMenu::draw()
 {
   // Fill the background
-  const auto& wc = getColorTheme();
-  setColor (wc->menu.fg, wc->menu.bg);
+  const auto& wc_menu = getColorTheme()->menu;
+  setColor (wc_menu.fg, wc_menu.bg);
 
   if ( FVTerm::getFOutput()->isMonochron() )
     setReverse(true);
@@ -1064,9 +1114,9 @@ void FMenu::drawItems()
 //----------------------------------------------------------------------
 inline void FMenu::drawSeparator (int y)
 {
-  const auto& wc = getColorTheme();
+  const auto& wc_menu = getColorTheme()->menu;
   print() << FPoint{1, 2 + y}
-          << FColorPair{wc->menu.fg, wc->menu.bg};
+          << FColorPair{wc_menu.fg, wc_menu.bg};
 
   if ( FVTerm::getFOutput()->isMonochron() )
     setReverse(true);
@@ -1149,46 +1199,56 @@ inline void FMenu::drawCheckMarkPrefix (const FMenuItem* m_item)
   if ( ! has_checkable_items )
     return;
 
-  auto print_bullet = [this] ()
-  {
-    if ( FVTerm::getFOutput()->isNewFont() )
-      print (UniChar::NF_Bullet);      // NF_Bullet ●
-    else
-      print (UniChar::BlackCircle);    // BlackCircle ●
-  };
-
-  auto print_check_mark = [this] ()
-  {
-    if ( FVTerm::getFOutput()->isNewFont() )
-      print (UniChar::NF_check_mark);  // NF_check_mark ✓
-    else
-      print (UniChar::SquareRoot);     // SquareRoot √
-  };
-
   if ( is_checkable )
   {
     if ( is_checked )
-    {
-      if ( is_radio_btn )
-        print_bullet();
-      else
-        print_check_mark();
-    }
+      printChecked(is_radio_btn);
     else
-    {
-      const auto& wc = getColorTheme();
-      setColor (wc->menu.inactive_fg, getBackgroundColor());
-
-      if ( FVTerm::getFOutput()->getEncoding() == Encoding::ASCII )
-        print ('-');
-      else
-        print (UniChar::SmallBullet);  // ·
-
-      setColor();
-    }
+      printUnchecked();
   }
   else
     print (' ');
+}
+
+//----------------------------------------------------------------------
+inline void FMenu::printChecked (bool is_radio_btn)
+{
+  if ( is_radio_btn )
+    printBullet();
+  else
+    printCheckMark();
+}
+
+//----------------------------------------------------------------------
+inline void FMenu::printUnchecked()
+{
+  const auto& wc_menu_inactive_fg = getColorTheme()->menu.inactive_fg;
+  setColor (wc_menu_inactive_fg, getBackgroundColor());
+
+  if ( FVTerm::getFOutput()->getEncoding() == Encoding::ASCII )
+    print ('-');
+  else
+    print (UniChar::SmallBullet);  // ·
+
+  setColor();
+}
+
+//----------------------------------------------------------------------
+inline void FMenu::printBullet()
+{
+  if ( FVTerm::getFOutput()->isNewFont() )
+    print (UniChar::NF_Bullet);      // NF_Bullet ●
+  else
+    print (UniChar::BlackCircle);    // BlackCircle ●
+}
+
+//----------------------------------------------------------------------
+inline void FMenu::printCheckMark()
+{
+  if ( FVTerm::getFOutput()->isNewFont() )
+    print (UniChar::NF_check_mark);  // NF_check_mark ✓
+  else
+    print (UniChar::SquareRoot);     // SquareRoot √
 }
 
 //----------------------------------------------------------------------
@@ -1196,35 +1256,45 @@ inline void FMenu::drawMenuText (MenuText& data)
 {
   // Print menu text
 
-  for (std::size_t z{0}; z < data.text.getLength(); z++)
+  for (std::size_t pos{0}; pos < data.text.getLength(); pos++)
   {
-    if ( ! isPrintable(data.text[z])
-      && ! FVTerm::getFOutput()->isNewFont()
-      && ( data.text[z] < UniChar::NF_rev_left_arrow2
-        || data.text[z] > UniChar::NF_check_mark )
-      && ! FVTerm::getFOutput()->isEncodable(wchar_t(data.text[z])) )
-    {
-      data.text[z] = L' ';
-    }
+    wchar_t ch = data.text[pos];
 
-    if ( z == data.hotkeypos )
-    {
-      const auto& wc = getColorTheme();
-      setColor (wc->menu.hotkey_fg, wc->menu.hotkey_bg);
+    if ( isCharacterInvalid(ch) )
+      ch = L' ';
 
-      if ( ! data.no_underline )
-        setUnderline();
-
-      print (data.text[z]);
-
-      if ( ! data.no_underline )
-        unsetUnderline();
-
-      setColor();
-    }
+    if ( pos == data.hotkeypos )
+      printHotkey (data, ch);
     else
-      print (data.text[z]);
+      print (ch);
   }
+}
+
+//----------------------------------------------------------------------
+inline auto FMenu::isCharacterInvalid (wchar_t ch) const -> bool
+{
+  return ! isPrintable(ch)
+      && ! FVTerm::getFOutput()->isNewFont()
+      && ( ch < UniChar::NF_rev_left_arrow2
+        || ch > UniChar::NF_check_mark )
+      && ! FVTerm::getFOutput()->isEncodable(ch);
+}
+
+//----------------------------------------------------------------------
+inline void FMenu::printHotkey (const MenuText& data, wchar_t ch)
+{
+  const auto& wc_menu = getColorTheme()->menu;
+  setColor (wc_menu.hotkey_fg, wc_menu.hotkey_bg);
+
+  if ( ! data.no_underline )
+    setUnderline();
+
+  print (ch);
+
+  if ( ! data.no_underline )
+    unsetUnderline();
+
+  setColor();
 }
 
 //----------------------------------------------------------------------
@@ -1276,22 +1346,22 @@ inline void FMenu::setLineAttributes (const FMenuItem* m_item, int y)
 {
   const bool is_enabled  = m_item->isEnabled();
   const bool is_selected = m_item->isSelected();
-  const auto& wc = getColorTheme();
+  const auto& wc_menu = getColorTheme()->menu;
 
   if ( is_enabled )
   {
     if ( is_selected )
     {
-      setForegroundColor (wc->menu.focus_fg);
-      setBackgroundColor (wc->menu.focus_bg);
+      setForegroundColor (wc_menu.focus_fg);
+      setBackgroundColor (wc_menu.focus_bg);
 
       if ( FVTerm::getFOutput()->isMonochron() )
         setReverse(false);
     }
     else
     {
-      setForegroundColor (wc->menu.fg);
-      setBackgroundColor (wc->menu.bg);
+      setForegroundColor (wc_menu.fg);
+      setBackgroundColor (wc_menu.bg);
 
       if ( FVTerm::getFOutput()->isMonochron() )
         setReverse(true);
@@ -1299,8 +1369,8 @@ inline void FMenu::setLineAttributes (const FMenuItem* m_item, int y)
   }
   else
   {
-    setForegroundColor (wc->menu.inactive_fg);
-    setBackgroundColor (wc->menu.inactive_bg);
+    setForegroundColor (wc_menu.inactive_fg);
+    setBackgroundColor (wc_menu.inactive_bg);
 
     if ( FVTerm::getFOutput()->isMonochron() )
       setReverse(true);
@@ -1313,33 +1383,14 @@ inline void FMenu::setLineAttributes (const FMenuItem* m_item, int y)
 //----------------------------------------------------------------------
 inline void FMenu::setCursorToHotkeyPosition (FMenuItem* m_item) const
 {
-  const bool is_checkable = m_item->checkable;
-  const bool is_selected  = m_item->isSelected();
+  if ( ! m_item->isSelected() )
+    return;
 
-  if ( hotkeypos == NOT_SET )
-  {
-    // set cursor to the first character
-    if ( is_selected )
-    {
-      if ( is_checkable )
-        m_item->setCursorPos({3, 1});
-      else
-        m_item->setCursorPos({2, 1});
-    }
-  }
-  else
-  {
-    if ( is_selected )
-    {
-      // set cursor to the hotkey position
-      const auto x = getColumnWidth (m_item->getText(), hotkeypos);
-
-      if ( is_checkable )
-        m_item->setCursorPos({3 + int(x), 1});
-      else
-        m_item->setCursorPos({2 + int(x), 1});
-    }
-  }
+  const int first_character_pos = 0;
+  const auto hotkey_pos = int(getColumnWidth(m_item->getText(), hotkeypos));
+  const int x = ( hotkeypos == NOT_SET ) ? first_character_pos : hotkey_pos;
+  const int c = has_checkable_items ? 1 : 0;
+  m_item->setCursorPos({2 + c + x, 1});
 }
 
 //----------------------------------------------------------------------

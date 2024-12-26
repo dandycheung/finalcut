@@ -50,6 +50,7 @@ FScrollView::FScrollView (FWidget* parent)
 FScrollView::~FScrollView()  // destructor
 {
   setChildPrintArea (viewport.get());
+  FWidget::delPreprocessingHandler(this);
 }
 
 
@@ -68,10 +69,7 @@ void FScrollView::setScrollWidth (std::size_t width)
     resizeArea (scroll_geometry, viewport.get());
     setColor();
     FScrollView::clearArea();
-    addPreprocessingHandler
-    (
-      F_PREPROC_HANDLER (this, &FScrollView::copy2area)
-    );
+    addLocalPreprocessingHandler();
     setChildPrintArea (viewport.get());
   }
 
@@ -97,10 +95,7 @@ void FScrollView::setScrollHeight (std::size_t height)
     resizeArea (scroll_geometry, viewport.get());
     setColor();
     clearArea();
-    addPreprocessingHandler
-    (
-      F_PREPROC_HANDLER (this, &FScrollView::copy2area)
-    );
+    addLocalPreprocessingHandler();
     setChildPrintArea (viewport.get());
   }
 
@@ -126,11 +121,8 @@ void FScrollView::setScrollSize (const FSize& size)
     scroll_geometry.setSize (width, height);
     resizeArea (scroll_geometry, viewport.get());
     setColor();
-    clearArea();
-    addPreprocessingHandler
-    (
-      F_PREPROC_HANDLER (this, &FScrollView::copy2area)
-    );
+    FScrollView::clearArea();
+    addLocalPreprocessingHandler();
     setChildPrintArea (viewport.get());
   }
 
@@ -308,9 +300,9 @@ void FScrollView::setViewportPrint (bool enable)
 //----------------------------------------------------------------------
 void FScrollView::resetColors()
 {
-  const auto& wc = getColorTheme();
-  setForegroundColor (wc->dialog.fg);
-  setBackgroundColor (wc->dialog.bg);
+  const auto& wc_dialog = getColorTheme()->dialog;
+  FWidget::setForegroundColor (wc_dialog.fg);
+  FWidget::setBackgroundColor (wc_dialog.bg);
   FWidget::resetColors();
 }
 
@@ -704,34 +696,47 @@ void FScrollView::copy2area()
   if ( ! (hasPrintArea() && viewport && viewport->has_changes) )
     return;
 
-  auto printarea = getCurrentPrintArea();
-  const auto& area_owner = printarea->getOwner<FVTerm*>();
-  const auto& area_widget = static_cast<FWidget*>(area_owner);
-  const int ax = area_widget->getLeftPadding() + getX();
-  const int ay = area_widget->getTopPadding() + getY();
+  auto* printarea = getCurrentPrintArea();
+  const auto* area_owner = printarea->getOwner<const FVTerm*>();
+  const auto* area_widget = static_cast<const FWidget*>(area_owner);
+
+  const bool ignore_padding = getFlags().feature.ignore_padding;
+  const int xoffset = ignore_padding ? 0 : area_widget->getLeftPadding();
+  const int yoffset = ignore_padding ? 0 : area_widget->getTopPadding();
+  const int ax = xoffset + getX();
+  const int ay = yoffset + getY();
   const int dx = viewport_geometry.getX();
   const int dy = viewport_geometry.getY();
-  auto y_end = int(getViewportHeight());
-  auto x_end = int(getViewportWidth());
+  const int rsh = printarea->shadow.width;
+  const int area_width = printarea->size.width;
+  const int area_height = printarea->size.height;
+  const auto viewport_width = int(getViewportWidth());
+  const auto viewport_height = int(getViewportHeight());
 
-  // viewport width does not fit into the printarea
-  if ( printarea->size.width <= ax + x_end )
-    x_end = std::max(0, printarea->size.width - ax);
+  // Calculate effective viewport dimensions within the printarea
+  const int x_end = std::min(viewport_width, std::max(0, area_width - ax));
+  const int y_end = std::min(viewport_height, std::max(0, area_height - ay));
 
-  // viewport height does not fit into the printarea
-  if ( printarea->size.height <= ay + y_end )
-    y_end = std::max(0, printarea->size.height - ay);
+  if ( x_end <= 0 || y_end <= 0 )
+    return;  // Early exit if nothing needs copying
 
-  for (auto y{0}; y < y_end; y++)  // line loop
+  const auto line_start = uInt(ax);
+  const auto line_end = uInt(ax + x_end - 1);
+  const auto max_limit = uInt(area_width + rsh - 1);
+
+  for (int y{0}; y < y_end; y++)  // line loop
   {
-    // viewport character
-    const auto& vc = viewport->getFChar(dx, dy + y);
-    // area character
-    auto& ac = printarea->getFChar(ax, ay + y);
-    std::memcpy (&ac, &vc, sizeof(FChar) * unsigned(x_end));
+    // Direct access to viewport and area characters
+    const auto* vc = &viewport->getFChar(dx, dy + y);  // Viewport character
+    auto* ac = &printarea->getFChar(ax, ay + y);       // Area character
+
+    // Copy a line of characters in one operation
+    std::memcpy (ac, vc, sizeof(FChar) * unsigned(x_end));
+
+    // Update line changes
     auto& line_changes = printarea->changes[unsigned(ay + y)];
-    line_changes.xmin = std::min(line_changes.xmin, uInt(ax));
-    line_changes.xmax = std::max(line_changes.xmax, uInt(ax + x_end - 1));
+    line_changes.xmin = std::min({line_changes.xmin, line_start, max_limit});
+    line_changes.xmax = std::min(std::max(line_changes.xmax, line_end), max_limit);
   }
 
   setViewportCursor();
@@ -777,13 +782,22 @@ void FScrollView::init()
   std::size_t width = std::max(std::size_t(1), getViewportWidth());
   std::size_t height = std::max(std::size_t(1), getViewportHeight());
   createViewport({ FSize{width, height} });
-  addPreprocessingHandler
-  (
-    F_PREPROC_HANDLER (this, &FScrollView::copy2area)
-  );
+  addLocalPreprocessingHandler();
 
   if ( viewport )
     setChildPrintArea (viewport.get());
+}
+
+//----------------------------------------------------------------------
+inline void FScrollView::addLocalPreprocessingHandler()
+{
+  if ( hasPreprocessingHandler(this) )
+    return;
+
+  FWidget::addPreprocessingHandler
+  (
+    F_PREPROC_HANDLER (this, &FScrollView::copy2area)
+  );
 }
 
 //----------------------------------------------------------------------
@@ -824,19 +838,19 @@ void FScrollView::setLabelStyle() const
   if ( FVTerm::getFOutput()->isMonochron() )
     setReverse(true);
 
-  const auto& wc = getColorTheme();
+  const auto& wc_label = getColorTheme()->label;
 
   if ( isEnabled() )
-    setColor(wc->label.emphasis_fg, wc->label.bg);
+    setColor(wc_label.emphasis_fg, wc_label.bg);
   else
-    setColor(wc->label.inactive_fg, wc->label.inactive_bg);
+    setColor(wc_label.inactive_fg, wc_label.inactive_bg);
 }
 
 //----------------------------------------------------------------------
 void FScrollView::printLabel ( const FString& label_text,
                                std::size_t hotkeypos )
 {
-  const auto& wc = getColorTheme();
+  const auto& wc_label = getColorTheme()->label;
   const std::size_t column_width = getColumnWidth(label_text);
   std::size_t length = getDisplayedTextLength (label_text, column_width);
   const auto underline = ! getFlags().feature.no_underline;
@@ -845,7 +859,7 @@ void FScrollView::printLabel ( const FString& label_text,
   {
     if ( z == hotkeypos && getFlags().feature.active )
     {
-      setColor (wc->label.hotkey_fg, wc->label.hotkey_bg);
+      setColor (wc_label.hotkey_fg, wc_label.hotkey_bg);
 
       if ( underline )
         setUnderline();
@@ -855,7 +869,7 @@ void FScrollView::printLabel ( const FString& label_text,
       if ( underline )
         unsetUnderline();
 
-      setColor (wc->label.emphasis_fg, wc->label.bg);
+      setColor (wc_label.emphasis_fg, wc_label.bg);
     }
     else
       print (label_text[z]);
@@ -865,12 +879,12 @@ void FScrollView::printLabel ( const FString& label_text,
 //----------------------------------------------------------------------
 void FScrollView::printEllipsis (const FString& label_text)
 {
-  const auto& wc = getColorTheme();
+  const auto& wc_label = getColorTheme()->label;
   const std::size_t column_width = getColumnWidth(label_text);
   const bool ellipsis{column_width > getClientWidth()};
 
   if ( ellipsis )  // Print ellipsis
-    print() << FColorPair {wc->label.ellipsis_fg, wc->label.bg} << "..";
+    print() << FColorPair {wc_label.ellipsis_fg, wc_label.bg} << "..";
 
   if ( FVTerm::getFOutput()->isMonochron() )
     setReverse(true);

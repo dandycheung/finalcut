@@ -92,13 +92,6 @@ auto FLineEdit::operator << (const wchar_t c) -> FLineEdit&
   return *this;
 }
 
-//----------------------------------------------------------------------
-auto FLineEdit::operator >> (FString& s) const -> const FLineEdit&
-{
-  s += text;
-  return *this;
-}
-
 
 // public methods of FLineEdit
 //----------------------------------------------------------------------
@@ -275,25 +268,25 @@ void FLineEdit::setLabelOrientation (const LabelOrientation o)
 //----------------------------------------------------------------------
 void FLineEdit::resetColors()
 {
-  const auto& wc = getColorTheme();
+  const auto& wc_input_field = getColorTheme()->input_field;
 
   if ( isEnabled() )  // active
   {
     if ( hasFocus() )
     {
-      setForegroundColor (wc->input_field.focus_fg);
-      setBackgroundColor (wc->input_field.focus_bg);
+      FWidget::setForegroundColor (wc_input_field.focus_fg);
+      FWidget::setBackgroundColor (wc_input_field.focus_bg);
     }
     else
     {
-      setForegroundColor (wc->input_field.fg);
-      setBackgroundColor (wc->input_field.bg);
+      FWidget::setForegroundColor (wc_input_field.fg);
+      FWidget::setBackgroundColor (wc_input_field.bg);
     }
   }
   else  // inactive
   {
-    setForegroundColor (wc->input_field.inactive_fg);
-    setBackgroundColor (wc->input_field.inactive_bg);
+    FWidget::setForegroundColor (wc_input_field.inactive_fg);
+    FWidget::setBackgroundColor (wc_input_field.inactive_bg);
   }
 
   FWidget::resetColors();
@@ -566,9 +559,9 @@ void FLineEdit::init()
   mapKeyFunctions();
 
   if ( isReadOnly() )
-    unsetVisibleCursor();
+    FLineEdit::setVisibleCursor(false);
   else
-    setVisibleCursor();
+    FLineEdit::setVisibleCursor(true);
 }
 
 //----------------------------------------------------------------------
@@ -806,11 +799,11 @@ inline auto FLineEdit::getColumnWidthWithErrorHandling
 //----------------------------------------------------------------------
 inline auto FLineEdit::endPosToOffset (std::size_t pos) -> offsetPair
 {
-  std::size_t input_width = getWidth() - 2;
+  std::size_t input_width =  ( getWidth() > 2 ) ? getWidth() - 2 : 0;
   std::size_t fullwidth_char_offset{0};
   const std::size_t len = print_text.getLength();
 
-  if ( pos >= len )
+  if ( pos >= len && len > 0 )
     pos = len - 1;
 
   while ( pos > 0 && input_width > 0 )
@@ -818,10 +811,9 @@ inline auto FLineEdit::endPosToOffset (std::size_t pos) -> offsetPair
     std::size_t char_width = \
         getColumnWidthWithErrorHandling (print_text[pos]);
 
-    if ( input_width >= char_width )
+    if ( input_width > char_width )
       input_width -= char_width;
-
-    if ( input_width == 0 )
+    else
       break;
 
     if ( input_width == 1)
@@ -953,23 +945,17 @@ void FLineEdit::adjustTextOffset()
   const auto input_width = getWidth() - 2;
   const auto len = print_text.getLength();
   const auto len_column = getColumnWidth (print_text);
+
+  // Calculate offsets and cursor column positions
   auto text_offset_column = getColumnWidth (print_text, text_offset);
   const auto cursor_pos_column = getColumnWidth (print_text, cursor_pos);
-  std::size_t first_char_width{0};
-  std::size_t cursor_char_width{1};
   char_width_offset = 0;
 
-  if ( cursor_pos < len )
-  {
-    cursor_char_width = \
-        getColumnWidthWithErrorHandling (print_text[cursor_pos], 1);
-  }
-
-  if ( len > 0 )
-  {
-    first_char_width = \
-        getColumnWidthWithErrorHandling (print_text[0]);
-  }
+  // Cache character widths
+  std::size_t first_char_width = \
+      len > 0 ? getColumnWidthWithErrorHandling (print_text[0]) : 0;
+  std::size_t cursor_char_width = \
+      cursor_pos < len ? getColumnWidthWithErrorHandling (print_text[cursor_pos], 1) : 1;
 
   // Text alignment right for long lines
   while ( text_offset > 0 && len_column - text_offset_column < input_width )
@@ -979,7 +965,7 @@ void FLineEdit::adjustTextOffset()
   }
 
   // Right cursor overflow
-  if ( cursor_pos_column + 1 > text_offset_column + input_width )
+  if ( isRightCursorOverflow(cursor_pos_column, text_offset_column + input_width) )
   {
     const auto& offset_pair = endPosToOffset(cursor_pos);
     text_offset = offset_pair.first;
@@ -988,8 +974,7 @@ void FLineEdit::adjustTextOffset()
   }
 
   // Right full-width cursor overflow
-  if ( cursor_pos_column + 2 > text_offset_column + input_width
-    && cursor_char_width == 2 )
+  if ( isRightFullWidthCursorOverflow(cursor_pos_column, text_offset_column + input_width, cursor_char_width) )
   {
     text_offset++;
 
@@ -998,8 +983,30 @@ void FLineEdit::adjustTextOffset()
   }
 
   // Left cursor underflow
-  if ( text_offset > cursor_pos )
+  if ( isLeftCursorUnderflow() )
     text_offset = cursor_pos;
+}
+
+//----------------------------------------------------------------------
+inline auto FLineEdit::isRightCursorOverflow ( std::size_t cursor_pos_column,
+                                               std::size_t last_column ) const -> bool
+{
+  return cursor_pos_column + 1 > last_column;
+}
+
+//----------------------------------------------------------------------
+inline auto FLineEdit::isRightFullWidthCursorOverflow ( std::size_t cursor_pos_column,
+                                                        std::size_t last_column,
+                                                        std::size_t cursor_char_width ) const -> bool
+{
+  return cursor_pos_column + 2 > last_column
+      && cursor_char_width == 2;
+}
+
+//----------------------------------------------------------------------
+inline auto FLineEdit::isLeftCursorUnderflow() const -> bool
+{
+  return text_offset > cursor_pos;
 }
 
 //----------------------------------------------------------------------
@@ -1103,7 +1110,7 @@ inline void FLineEdit::deletePreviousCharacter()
 {
   // Backspace functionality
 
-  if ( text.getLength() == 0 || cursor_pos == 0 )
+  if ( text.isEmpty() || cursor_pos == 0 )
     return;
 
   cursorLeft();

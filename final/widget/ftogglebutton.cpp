@@ -3,7 +3,7 @@
 *                                                                      *
 * This file is part of the FINAL CUT widget toolkit                    *
 *                                                                      *
-* Copyright 2014-2023 Markus Gans                                      *
+* Copyright 2014-2024 Markus Gans                                      *
 *                                                                      *
 * FINAL CUT is free software; you can redistribute it and/or modify    *
 * it under the terms of the GNU Lesser General Public License as       *
@@ -72,7 +72,7 @@ FToggleButton::FToggleButton (const FString& txt, FWidget* parent)
 //----------------------------------------------------------------------
 FToggleButton::~FToggleButton()  // destructor
 {
-  delAccelerator();
+  FToggleButton::delAccelerator(this);
 
   if ( hasGroup() )
     getGroup()->remove(this);
@@ -114,25 +114,26 @@ void FToggleButton::setGeometry ( const FPoint& pos, const FSize& s
 //----------------------------------------------------------------------
 void FToggleButton::resetColors()
 {
-  const auto& wc = getColorTheme();
-
   if ( isEnabled() )  // active
   {
+    const auto& wc_toggle_button = getColorTheme()->toggle_button;
+
     if ( hasFocus() )
     {
-      setForegroundColor (wc->toggle_button.focus_fg);
-      setBackgroundColor (wc->toggle_button.focus_bg);
+      FWidget::setForegroundColor (wc_toggle_button.focus_fg);
+      FWidget::setBackgroundColor (wc_toggle_button.focus_bg);
     }
     else
     {
-      setForegroundColor (wc->toggle_button.fg);
-      setBackgroundColor (wc->toggle_button.bg);
+      FWidget::setForegroundColor (wc_toggle_button.fg);
+      FWidget::setBackgroundColor (wc_toggle_button.bg);
     }
   }
   else  // inactive
   {
-    setForegroundColor (wc->label.inactive_fg);
-    setBackgroundColor (wc->label.inactive_bg);
+    const auto& wc_label = getColorTheme()->label;
+    FWidget::setForegroundColor (wc_label.inactive_fg);
+    FWidget::setBackgroundColor (wc_label.inactive_bg);
   }
 
   FWidget::resetColors();
@@ -172,11 +173,11 @@ void FToggleButton::setText (const FString& txt)
   text.setString(txt);
   std::size_t hotkey_mark = ( getHotkey(text) != FKey::None ) ? 1 : 0;
   std::size_t column_width = getColumnWidth(text);
-  setWidth(button_width + column_width - hotkey_mark);
+  FWidget::setWidth(button_width + column_width - hotkey_mark);
 
   if ( isEnabled() )
   {
-    delAccelerator();
+    FToggleButton::delAccelerator(this);
     setHotkeyAccelerator();
   }
 }
@@ -372,18 +373,18 @@ void FToggleButton::drawText (const FString& label_text, std::size_t hotkeypos)
   if ( FVTerm::getFOutput()->isMonochron() )
     setReverse(true);
 
-  const auto& wc = getColorTheme();
+  const auto& wc_label = getColorTheme()->label;
 
   if ( isEnabled() )
-    setColor (wc->label.fg, wc->label.bg);
+    setColor (wc_label.fg, wc_label.bg);
   else
-    setColor (wc->label.inactive_fg, wc->label.inactive_bg);
+    setColor (wc_label.inactive_fg, wc_label.inactive_bg);
 
   for (std::size_t z{0}; z < label_text.getLength(); z++)
   {
     if ( (z == hotkeypos) && getFlags().feature.active )
     {
-      setColor (wc->label.hotkey_fg, wc->label.hotkey_bg);
+      setColor (wc_label.hotkey_fg, wc_label.hotkey_bg);
 
       if ( ! getFlags().feature.no_underline )
         setUnderline();
@@ -393,7 +394,7 @@ void FToggleButton::drawText (const FString& label_text, std::size_t hotkeypos)
       if ( ! getFlags().feature.no_underline )
         unsetUnderline();
 
-      setColor (wc->label.fg, wc->label.bg);
+      setColor (wc_label.fg, wc_label.bg);
     }
     else
       print (label_text[z]);

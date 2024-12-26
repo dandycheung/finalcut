@@ -3,7 +3,7 @@
 *                                                                      *
 * This file is part of the FINAL CUT widget toolkit                    *
 *                                                                      *
-* Copyright 2023 Markus Gans                                           *
+* Copyright 2023-2024 Markus Gans                                      *
 *                                                                      *
 * FINAL CUT is free software; you can redistribute it and/or modify    *
 * it under the terms of the GNU Lesser General Public License as       *
@@ -58,7 +58,7 @@ inline auto readFromPipe (int fd, uint64_t& buffer, std::size_t bytes_to_read) -
 {
   auto current_bytes_read = ::read(fd, &buffer, bytes_to_read);
 
-  if ( current_bytes_read == -1 )
+  if ( current_bytes_read < 0 )  // Underflow safe for all negative numbers
   {
     int error{errno};
     std::error_code err_code{error, std::generic_category()};

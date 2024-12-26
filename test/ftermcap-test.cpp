@@ -3,7 +3,7 @@
 *                                                                      *
 * This file is part of the FINAL CUT widget toolkit                    *
 *                                                                      *
-* Copyright 2021-2023 Markus Gans                                      *
+* Copyright 2021-2024 Markus Gans                                      *
 *                                                                      *
 * FINAL CUT is free software; you can redistribute it and/or modify    *
 * it under the terms of the GNU Lesser General Public License as       *
@@ -182,7 +182,7 @@ void FTermcapTest::getFlagTest()
 //----------------------------------------------------------------------
 void FTermcapTest::getNumberTest()
 {
-  static constexpr int NA = -1;  // not_available
+  static constexpr int NA = -1;  // Not available
   auto& fterm_data = finalcut::FTermData::getInstance();
   fterm_data.setTermType("xterm");
   finalcut::FTermcap tcap;
@@ -607,7 +607,7 @@ auto FTermcapTest::putstring_test (const std::string& str) -> int
 {
   //std::cout << '"' << str << '"' << std::flush;
   output.append(str);
-  return str.length();
+  return int(str.length());
 }
 
 //----------------------------------------------------------------------

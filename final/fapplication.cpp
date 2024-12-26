@@ -820,7 +820,7 @@ inline auto FApplication::sendKeyUpEvent (FWidget* widget) const -> bool
 }
 
 //----------------------------------------------------------------------
-inline void FApplication::sendKeyboardAccelerator()
+inline void FApplication::sendKeyboardAccelerator() const
 {
   if ( FWidget::getOpenMenu() )
     return;
@@ -982,7 +982,7 @@ auto FApplication::processAccelerator (const FWidget& widget) const -> bool
 }
 
 //----------------------------------------------------------------------
-void FApplication::processTerminalFocus (const FKey& key)
+void FApplication::processTerminalFocus (const FKey& key) const
 {
   auto root_widget = getRootWidget();
 
@@ -1071,7 +1071,7 @@ auto FApplication::isWheelEvent (const FMouseData& md) -> bool
       || md.isWheelDown()
       || md.isWheelLeft()
       || md.isWheelRight();
-};
+}
 
 //----------------------------------------------------------------------
 void FApplication::unsetMoveResizeMode (const FMouseData&)

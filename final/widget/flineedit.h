@@ -3,7 +3,7 @@
 *                                                                      *
 * This file is part of the FINAL CUT widget toolkit                    *
 *                                                                      *
-* Copyright 2012-2023 Markus Gans                                      *
+* Copyright 2012-2024 Markus Gans                                      *
 *                                                                      *
 * FINAL CUT is free software; you can redistribute it and/or modify    *
 * it under the terms of the GNU Lesser General Public License as       *
@@ -69,6 +69,8 @@ class FLineEdit : public FWidget
   public:
     // Using-declaration
     using FWidget::setGeometry;
+    using FWidget::setVisibleCursor;
+    using FWidget::unsetVisibleCursor;
 
     // Enumerations
     enum class LabelOrientation
@@ -108,7 +110,12 @@ class FLineEdit : public FWidget
     auto operator << (const typeT&) -> FLineEdit&;
     auto operator << (UniChar) -> FLineEdit&;
     auto operator << (const wchar_t) -> FLineEdit&;
-    auto operator >> (FString&) const -> const FLineEdit&;
+
+    friend auto operator >> (const FLineEdit& lhs, FString& rhs) -> const FLineEdit&
+    {
+      rhs += lhs.text;
+      return lhs;
+    }
 
     // Accessors
     auto getClassName() const -> FString override;
@@ -209,6 +216,9 @@ class FLineEdit : public FWidget
     void handleLeftDragScroll();
     void handleRightDragScroll();
     void adjustTextOffset();
+    auto isRightCursorOverflow (std::size_t, std::size_t) const -> bool;
+    auto isRightFullWidthCursorOverflow (std::size_t, std::size_t, std::size_t) const -> bool;
+    auto isLeftCursorUnderflow() const -> bool;
     void cursorLeft();
     void cursorRight();
     void cursorHome();

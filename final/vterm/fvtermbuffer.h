@@ -3,7 +3,7 @@
 *                                                                      *
 * This file is part of the FINAL CUT widget toolkit                    *
 *                                                                      *
-* Copyright 2017-2023 Markus Gans                                      *
+* Copyright 2017-2024 Markus Gans                                      *
 *                                                                      *
 * FINAL CUT is free software; you can redistribute it and/or modify    *
 * it under the terms of the GNU Lesser General Public License as       *
@@ -139,8 +139,14 @@ class FVTermBuffer
     FChar       nc{};  // next character
 
     // Non-member operators
-    friend auto operator << ( FCharVector&
-                            , const FVTermBuffer& ) -> FCharVector&;
+    friend auto operator << ( FVTermBuffer::FCharVector& term_string
+                            , const FVTermBuffer& buf ) -> FVTermBuffer::FCharVector&
+    {
+      if ( ! buf.data.empty() )
+        term_string.assign(buf.data.cbegin(), buf.data.cend());
+
+      return term_string;
+    }
 };
 
 // non-member function forward declarations
