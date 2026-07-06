@@ -165,8 +165,8 @@ auto FKeyboard::isKeyPressed (uInt64 blocking_time) -> bool
 
   FD_ZERO(&ifds);
   FD_SET(stdin_no, &ifds);
-
-  tv.tv_sec = tv.tv_usec = 0;  // Non-blocking input
+  tv.tv_sec  = 0;  // Non-blocking input
+  tv.tv_usec = 0;  // Non-blocking input
 
   if ( blocking_time > 0
     && non_blocking_input_support

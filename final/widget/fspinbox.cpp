@@ -101,7 +101,10 @@ void FSpinBox::setValue (sInt64 n)
 void FSpinBox::setMinValue (sInt64 n)
 {
   if ( n <= max )
-    value = min = n;
+  {
+    value = n;
+    min = n;
+  }
 }
 
 //----------------------------------------------------------------------
@@ -116,7 +119,8 @@ void FSpinBox::setRange (sInt64 m, sInt64 n)
 {
   if ( m <= n )
   {
-    value = min = m;
+    value = m;
+    min = m;
     max = n;
   }
 }

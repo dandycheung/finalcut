@@ -177,9 +177,9 @@ void FMessageBox::init()
   if ( (button_digit[2] != ButtonType::Reject && button_digit[1] == ButtonType::Reject)
     || (button_digit[1] != ButtonType::Reject && button_digit[0] == ButtonType::Reject) )
   {
-    button_digit[0] = button_digit[1] \
-                    = button_digit[2] \
-                    = ButtonType::Reject;
+    button_digit[0] = ButtonType::Reject;
+    button_digit[1] = ButtonType::Reject;
+    button_digit[2] = ButtonType::Reject;
   }
 
   if ( button_digit[0] != ButtonType::Reject )

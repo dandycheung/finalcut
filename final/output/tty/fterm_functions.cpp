@@ -515,7 +515,8 @@ inline auto determinesFirstColumn (RangeData& d) -> IsDetermined
 
   // Only half a full-width character found at first position
   d.first_ch = left_quotation_mark;  // Replace with '‹'
-  d.num = d.col_num = 1;
+  d.num = 1;
+  d.col_num = 1;
   d.col_pos = d.col_first;
   return IsDetermined::No;  // First column not yet determined
 }

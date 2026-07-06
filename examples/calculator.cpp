@@ -467,7 +467,8 @@ void Calc::clear (const lDouble&)
   input = "";
   clearInfixOperator();
   last_infix_operator = '\0';
-  a = b = 0.0L;
+  a = 0.0L;
+  b = 0.0L;
 }
 
 //----------------------------------------------------------------------
@@ -693,7 +694,8 @@ void Calc::open_bracket (const lDouble&)
   bracket_stack.push(d);
   clearInfixOperator();
   input = "";
-  a = b = 0.0L;
+  a = 0.0L;
+  b = 0.0L;
   setDisplay(a);
 }
 

@@ -378,7 +378,10 @@ auto FTermLinux::loadOldFont() -> bool
   }
 
   if ( retval )
-    vga_font = new_font = false;
+  {
+    vga_font = false;
+    new_font = false;
+  }
 
   return retval;
 }

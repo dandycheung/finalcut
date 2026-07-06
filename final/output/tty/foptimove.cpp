@@ -132,8 +132,8 @@ void FOptiMove::set_cursor_home (const FTermcap::TermcapString& cap)
   else
   {
     cursor.home.cap = {nullptr, 0};
-    cursor.home.duration = \
-    cursor.home.length   = LONG_DURATION;
+    cursor.home.duration = LONG_DURATION;
+    cursor.home.length = LONG_DURATION;
   }
 }
 
@@ -149,8 +149,8 @@ void FOptiMove::set_cursor_to_ll (const FTermcap::TermcapString& cap)
   else
   {
     cursor.to_ll.cap = {nullptr, 0};
-    cursor.to_ll.duration = \
-    cursor.to_ll.length   = LONG_DURATION;
+    cursor.to_ll.duration = LONG_DURATION;
+    cursor.to_ll.length = LONG_DURATION;
   }
 }
 
@@ -166,8 +166,8 @@ void FOptiMove::set_carriage_return (const FTermcap::TermcapString& cap)
   else
   {
     cursor.carriage_return.cap = {nullptr, 0};
-    cursor.carriage_return.duration = \
-    cursor.carriage_return.length   = LONG_DURATION;
+    cursor.carriage_return.duration = LONG_DURATION;
+    cursor.carriage_return.length = LONG_DURATION;
   }
 }
 
@@ -183,8 +183,8 @@ void FOptiMove::set_tabular (const FTermcap::TermcapString& cap)
   else
   {
     cursor.tab.cap = {nullptr, 0};
-    cursor.tab.duration = \
-    cursor.tab.length   = LONG_DURATION;
+    cursor.tab.duration = LONG_DURATION;
+    cursor.tab.length = LONG_DURATION;
   }
 }
 
@@ -200,8 +200,8 @@ void FOptiMove::set_back_tab (const FTermcap::TermcapString& cap)
   else
   {
     cursor.back_tab.cap = {nullptr, 0};
-    cursor.back_tab.duration = \
-    cursor.back_tab.length   = LONG_DURATION;
+    cursor.back_tab.duration = LONG_DURATION;
+    cursor.back_tab.length = LONG_DURATION;
   }
 }
 
@@ -217,8 +217,8 @@ void FOptiMove::set_cursor_up (const FTermcap::TermcapString& cap)
   else
   {
     cursor.up.cap = {nullptr, 0};
-    cursor.up.duration = \
-    cursor.up.length   = LONG_DURATION;
+    cursor.up.duration = LONG_DURATION;
+    cursor.up.length = LONG_DURATION;
   }
 }
 
@@ -234,8 +234,8 @@ void FOptiMove::set_cursor_down (const FTermcap::TermcapString& cap)
   else
   {
     cursor.down.cap = {nullptr, 0};
-    cursor.down.duration = \
-    cursor.down.length   = LONG_DURATION;
+    cursor.down.duration = LONG_DURATION;
+    cursor.down.length = LONG_DURATION;
   }
 }
 
@@ -251,8 +251,8 @@ void FOptiMove::set_cursor_left (const FTermcap::TermcapString& cap)
   else
   {
     cursor.left.cap = {nullptr, 0};
-    cursor.left.duration = \
-    cursor.left.length   = LONG_DURATION;
+    cursor.left.duration = LONG_DURATION;
+    cursor.left.length = LONG_DURATION;
   }
 }
 
@@ -268,8 +268,8 @@ void FOptiMove::set_cursor_right (const FTermcap::TermcapString& cap)
   else
   {
     cursor.right.cap = {nullptr, 0};
-    cursor.right.duration = \
-    cursor.right.length   = LONG_DURATION;
+    cursor.right.duration = LONG_DURATION;
+    cursor.right.length = LONG_DURATION;
   }
 }
 
@@ -286,8 +286,8 @@ void FOptiMove::set_cursor_address (const FTermcap::TermcapString& cap)
   else
   {
     parm_cursor.address.cap = {nullptr, 0};
-    parm_cursor.address.duration = \
-    parm_cursor.address.length   = LONG_DURATION;
+    parm_cursor.address.duration = LONG_DURATION;
+    parm_cursor.address.length = LONG_DURATION;
   }
 }
 
@@ -304,8 +304,8 @@ void FOptiMove::set_column_address (const FTermcap::TermcapString& cap)
   else
   {
     parm_cursor.column_address.cap = {nullptr, 0};
-    parm_cursor.column_address.duration = \
-    parm_cursor.column_address.length   = LONG_DURATION;
+    parm_cursor.column_address.duration = LONG_DURATION;
+    parm_cursor.column_address.length = LONG_DURATION;
   }
 }
 
@@ -322,8 +322,8 @@ void FOptiMove::set_row_address (const FTermcap::TermcapString& cap)
   else
   {
     parm_cursor.row_address.cap = {nullptr, 0};
-    parm_cursor.row_address.duration = \
-    parm_cursor.row_address.length   = LONG_DURATION;
+    parm_cursor.row_address.duration = LONG_DURATION;
+    parm_cursor.row_address.length = LONG_DURATION;
   }
 }
 
@@ -340,8 +340,8 @@ void FOptiMove::set_parm_up_cursor (const FTermcap::TermcapString& cap)
   else
   {
     parm_cursor.up.cap = {nullptr, 0};
-    parm_cursor.up.duration = \
-    parm_cursor.up.length   = LONG_DURATION;
+    parm_cursor.up.duration = LONG_DURATION;
+    parm_cursor.up.length = LONG_DURATION;
   }
 }
 
@@ -358,8 +358,8 @@ void FOptiMove::set_parm_down_cursor (const FTermcap::TermcapString& cap)
   else
   {
     parm_cursor.down.cap = {nullptr, 0};
-    parm_cursor.down.duration = \
-    parm_cursor.down.length   = LONG_DURATION;
+    parm_cursor.down.duration = LONG_DURATION;
+    parm_cursor.down.length = LONG_DURATION;
   }
 }
 
@@ -376,8 +376,8 @@ void FOptiMove::set_parm_left_cursor (const FTermcap::TermcapString& cap)
   else
   {
     parm_cursor.left.cap = {nullptr, 0};
-    parm_cursor.left.duration = \
-    parm_cursor.left.length   = LONG_DURATION;
+    parm_cursor.left.duration = LONG_DURATION;
+    parm_cursor.left.length = LONG_DURATION;
   }
 }
 
@@ -394,8 +394,8 @@ void FOptiMove::set_parm_right_cursor (const FTermcap::TermcapString& cap)
   else
   {
     parm_cursor.right.cap = {nullptr, 0};
-    parm_cursor.right.duration = \
-    parm_cursor.right.length   = LONG_DURATION;
+    parm_cursor.right.duration = LONG_DURATION;
+    parm_cursor.right.length = LONG_DURATION;
   }
 }
 
@@ -412,8 +412,8 @@ void FOptiMove::set_erase_chars (const FTermcap::TermcapString& cap)
   else
   {
     edit.erase_chars.cap = {nullptr, 0};
-    edit.erase_chars.duration = \
-    edit.erase_chars.length   = LONG_DURATION;
+    edit.erase_chars.duration = LONG_DURATION;
+    edit.erase_chars.length = LONG_DURATION;
   }
 }
 
@@ -430,8 +430,8 @@ void FOptiMove::set_repeat_char (const FTermcap::TermcapString& cap)
   else
   {
     edit.repeat_char.cap = {nullptr, 0};
-    edit.repeat_char.duration = \
-    edit.repeat_char.length   = LONG_DURATION;
+    edit.repeat_char.duration = LONG_DURATION;
+    edit.repeat_char.length = LONG_DURATION;
   }
 }
 
@@ -448,8 +448,8 @@ void FOptiMove::set_repeat_last_char (const FTermcap::TermcapString& cap)
   else
   {
     edit.repeat_last_char.cap = {nullptr, 0};
-    edit.repeat_last_char.duration = \
-    edit.repeat_last_char.length   = LONG_DURATION;
+    edit.repeat_last_char.duration = LONG_DURATION;
+    edit.repeat_last_char.length = LONG_DURATION;
   }
 }
 
@@ -465,8 +465,8 @@ void FOptiMove::set_clr_bol (const FTermcap::TermcapString& cap)
   else
   {
     edit.clr_bol.cap = {nullptr, 0};
-    edit.clr_bol.duration = \
-    edit.clr_bol.length   = LONG_DURATION;
+    edit.clr_bol.duration = LONG_DURATION;
+    edit.clr_bol.length = LONG_DURATION;
   }
 }
 
@@ -482,8 +482,8 @@ void FOptiMove::set_clr_eol (const FTermcap::TermcapString& cap)
   else
   {
     edit.clr_eol.cap = {nullptr, 0};
-    edit.clr_eol.duration = \
-    edit.clr_eol.length   = LONG_DURATION;
+    edit.clr_eol.duration = LONG_DURATION;
+    edit.clr_eol.length = LONG_DURATION;
   }
 }
 

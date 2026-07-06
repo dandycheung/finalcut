@@ -1047,7 +1047,7 @@ void FListBox::multiSelectionUpTo (std::size_t pos)
   std::size_t from{};
   std::size_t to{};
 
-  if ( ! isMultiSelection() )
+  if ( ! isMultiSelection() || selection.select_from_item < 0 )
     return;
 
   if ( std::size_t(selection.select_from_item) > pos )

@@ -20,12 +20,22 @@ Table of Contents
 <!-- endtoc -->
 
 
+
+FINAL CUT is a [C++](https://en.wikipedia.org/wiki/C%2B%2B) library 
+designed for creating interactive, text-based terminal applications. 
+The process is straightforward: first, create the widgets; next, 
+arrange them inside a window; and finally, start the event loop. 
+The following sections and pages provide a detailed description of 
+this process.
+
+
 Basic functions
 ---------------
 
-FINAL CUT is a library for creating text-based terminal applications.
-It runs on several Unix-like platforms. FINAL CUT is released under 
-the terms of the GNU Lesser General Public License v3.0
+FINAL CUT is a free open-source 
+[C++](https://en.wikipedia.org/wiki/C%2B%2B) widget toolkit. It runs 
+on several Unix-like platforms. FINAL CUT is released under the terms 
+of the GNU Lesser General Public License v3.0 
 ([GNU LGPL v3](https://www.gnu.org/licenses/lgpl-3.0-standalone.html)),
 which allows flexible licensing of applications. FINAL CUT was written
 in the programming language [C++](https://en.wikipedia.org/wiki/C%2B%2B).
@@ -122,6 +132,7 @@ auto main (int argc, char* argv[]) -> int
   <figcaption>Figure 3:  A blank dialog</figcaption>
 </figure>
 <br /><br />
+
 > [!NOTE]
 > To close the dialog, use the mouse or press 
 > <kbd>Shift</kbd>+<kbd>F10</kbd> or <kbd>Ctrl</kbd>+<kbd>^</kbd>

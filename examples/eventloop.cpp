@@ -145,7 +145,7 @@ auto main() -> int
                          char Char{'\0'};
                          const auto bytes = ::read(monitor->getFileDescriptor(), &Char, 1);
 
-                         if ( bytes > 0 )
+                         if ( bytes > 0 && std::isprint(int(Char)) )
                            std::cout << "typed in: '" << Char << "'"
                                      << std::endl;
                        }

@@ -212,7 +212,8 @@ auto FTermcap::encodeMotionParameter (const TermcapString& cap, int col, int row
   // Cache-Miss: call tgoto
   if ( const char* res = ::tgoto(C_STR(cap.data), col, row) )
   {
-    const auto& termcap_str = move_cache[key] = res;
+    move_cache[key] = res;
+    const auto& termcap_str = move_cache[key];
     return {termcap_str.data(), uInt32(termcap_str.size())};
   }
 

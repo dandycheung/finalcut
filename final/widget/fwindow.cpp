@@ -196,7 +196,8 @@ void FWindow::setMinimizable (bool enable)
 //----------------------------------------------------------------------
 void FWindow::setTransparentShadow (bool enable)
 {
-  setFlags().shadow.shadow = setFlags().shadow.trans_shadow = enable;
+  setFlags().shadow.shadow = enable;
+  setFlags().shadow.trans_shadow = enable;
 
   if ( enable )
     setShadowSize (FSize{2, 1});
