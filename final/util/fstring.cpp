@@ -303,6 +303,7 @@ auto FString::c_str() const -> const char*
   if ( isEmpty() )
     return "";
 
+  std::lock_guard<std::mutex> lock(char_string_mutex);
   char_string = internal_toCharString(string);
   return char_string.c_str();
 }
@@ -315,6 +316,7 @@ auto FString::c_str() -> char*
   if ( isEmpty() )
     return const_cast<char*>("");
 
+  std::lock_guard<std::mutex> lock(char_string_mutex);
   char_string = internal_toCharString(string);
   return const_cast<char*>(char_string.c_str());
 }

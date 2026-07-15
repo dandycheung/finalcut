@@ -39,7 +39,7 @@ FChar FVTermAttribute::next_attribute{};
 
 // Using-declaration
 using map_type = std::pair<const Style, std::function<void()>>;
-using AttributeLookupMap = std::unordered_map<const Style, std::function<void()>>;
+using AttributeLookupMap = std::unordered_map<const Style, std::function<void()>, EnumHash<Style>>;
 
 //----------------------------------------------------------------------
 static auto getAttributeLookupMap() -> AttributeLookupMap&

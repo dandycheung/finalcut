@@ -790,6 +790,7 @@ void FVTerm::addLayer (FTermRegion* region) const noexcept
   callPreprocessingHandler(region);
 
   // Create a stack by combining identical rows in sequence
+  std::lock_guard<std::mutex> lock(line_changes_batch_mutex);
   line_changes_batch.clear();  // Clear buffer
   buildLineChangeBatch(region, geometry);
 
@@ -843,6 +844,8 @@ void FVTerm::copyRegion (FTermRegion* dst, const FPoint& pos, FTermRegion* src) 
   auto dst_changes = dst->changes_in_line.begin() + ay;
   auto sc = src->data.cbegin() + (src_width * ot) + ol;  // src character ptr
   auto dc = dst->data.begin() + (dst_width * ay) + ax;  // dst character ptr
+
+  std::lock_guard<std::mutex> lock(buffer_mutex);
 
   if ( skip_one_vterm_update )  // dst is the virtual terminal
     determineCoveredRegions(src);
@@ -1768,8 +1771,13 @@ void FVTerm::initSettings()
   createVDesktop (term_size);
   active_region = vdesktop.get();
 
+  std::lock_guard<std::mutex> lock(buffer_mutex);
+
   // Reserving a typical number of changes
-  line_changes_batch.reserve(32);
+  {
+    std::lock_guard<std::mutex> lock(line_changes_batch_mutex);
+    line_changes_batch.reserve(32);
+  }
 
   // Reservation of capacity for at least 16 regions
   covered_regions_buffer.reserve(16);
@@ -1839,7 +1847,6 @@ inline void FVTerm::putMultiLayerRegionLine ( FChar_iterator dst_char
   std::fill_n(search_buffer, length, SearchState::start);
   const auto term_x = pos.getX();
   const auto term_y = pos.getY();
-
   overlay_line_buffer.clear();  // Clear buffer
 
   for (const auto* win : covered_regions_buffer)

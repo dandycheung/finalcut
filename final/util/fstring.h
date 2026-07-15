@@ -54,6 +54,7 @@
 #include <iostream>
 #include <limits>
 #include <memory>
+#include <mutex>
 #include <new>
 #include <stdexcept>
 #include <string>
@@ -252,6 +253,7 @@ class FString
             , enable_if_char_ptr_t<CharT> = nullptr>
     friend inline auto operator < (const FString& lhs, const CharT& rhs) -> bool
     {
+      std::lock_guard<std::mutex> lock(lhs.char_string_mutex);
       lhs.char_string = lhs.internal_toCharString(lhs.string);
       return rhs ? lhs.char_string.compare(rhs) < 0 : lhs.char_string.compare("") < 0;
     }
@@ -260,6 +262,7 @@ class FString
             , enable_if_char_array_t<CharT> = nullptr>
     friend inline auto operator < (const FString& lhs, const CharT& rhs) -> bool
     {
+      std::lock_guard<std::mutex> lock(lhs.char_string_mutex);
       lhs.char_string = lhs.internal_toCharString(lhs.string);
       return lhs.char_string.compare(rhs) < 0;
     }
@@ -287,6 +290,7 @@ class FString
             , enable_if_char_ptr_t<CharT> = nullptr>
     friend inline auto operator <= (const FString& lhs, const CharT& rhs) -> bool
     {
+      std::lock_guard<std::mutex> lock(lhs.char_string_mutex);
       lhs.char_string = lhs.internal_toCharString(lhs.string);
       return rhs ? lhs.char_string.compare(rhs) <= 0 : lhs.char_string.compare("") <= 0;
     }
@@ -295,6 +299,7 @@ class FString
             , enable_if_char_array_t<CharT> = nullptr>
     friend inline auto operator <= (const FString& lhs, const CharT& rhs) -> bool
     {
+      std::lock_guard<std::mutex> lock(lhs.char_string_mutex);
       lhs.char_string = lhs.internal_toCharString(lhs.string);
       return lhs.char_string.compare(rhs) <= 0;
     }
@@ -322,6 +327,7 @@ class FString
             , enable_if_char_ptr_t<CharT> = nullptr>
     friend inline auto operator == (const FString& lhs, const CharT& rhs) -> bool
     {
+      std::lock_guard<std::mutex> lock(lhs.char_string_mutex);
       lhs.char_string = lhs.internal_toCharString(lhs.string);
       return rhs ? lhs.char_string.compare(rhs) == 0 : lhs.char_string.compare("") == 0;
     }
@@ -330,6 +336,7 @@ class FString
             , enable_if_char_array_t<CharT> = nullptr>
     friend inline auto operator == (const FString& lhs, const CharT& rhs) -> bool
     {
+      std::lock_guard<std::mutex> lock(lhs.char_string_mutex);
       lhs.char_string = lhs.internal_toCharString(lhs.string);
       return lhs.char_string.compare(rhs) == 0;
     }
@@ -357,6 +364,7 @@ class FString
             , enable_if_char_ptr_t<CharT> = nullptr>
     friend inline auto operator != (const FString& lhs, const CharT& rhs) -> bool
     {
+      std::lock_guard<std::mutex> lock(lhs.char_string_mutex);
       lhs.char_string = lhs.internal_toCharString(lhs.string);
       return rhs ? lhs.char_string.compare(rhs) != 0 : lhs.char_string.compare("") != 0;
     }
@@ -365,6 +373,7 @@ class FString
             , enable_if_char_array_t<CharT> = nullptr>
     friend inline auto operator != (const FString& lhs, const CharT& rhs) -> bool
     {
+      std::lock_guard<std::mutex> lock(lhs.char_string_mutex);
       lhs.char_string = lhs.internal_toCharString(lhs.string);
       return lhs.char_string.compare(rhs) != 0;
     }
@@ -392,6 +401,7 @@ class FString
             , enable_if_char_ptr_t<CharT> = nullptr>
     friend inline auto operator >= (const FString& lhs, const CharT& rhs) -> bool
     {
+      std::lock_guard<std::mutex> lock(lhs.char_string_mutex);
       lhs.char_string = lhs.internal_toCharString(lhs.string);
       return rhs ? lhs.char_string.compare(rhs) >= 0 : lhs.char_string.compare("") >= 0;
     }
@@ -400,6 +410,7 @@ class FString
             , enable_if_char_array_t<CharT> = nullptr>
     friend inline auto operator >= (const FString& lhs, const CharT& rhs)  -> bool
     {
+      std::lock_guard<std::mutex> lock(lhs.char_string_mutex);
       lhs.char_string = lhs.internal_toCharString(lhs.string);
       return lhs.char_string.compare(rhs) >= 0;
     }
@@ -427,6 +438,7 @@ class FString
             , enable_if_char_ptr_t<CharT> = nullptr>
     friend inline auto operator > (const FString& lhs, const CharT& rhs) -> bool
     {
+      std::lock_guard<std::mutex> lock(lhs.char_string_mutex);
       lhs.char_string = lhs.internal_toCharString(lhs.string);
       return rhs ? lhs.char_string.compare(rhs) > 0 : lhs.char_string.compare("") > 0;
     }
@@ -435,6 +447,7 @@ class FString
             , enable_if_char_array_t<CharT> = nullptr>
     friend inline auto operator > (const FString& lhs, const CharT& rhs) -> bool
     {
+      std::lock_guard<std::mutex> lock(lhs.char_string_mutex);
       lhs.char_string = lhs.internal_toCharString(lhs.string);
       return lhs.char_string.compare(rhs) > 0;
     }
@@ -597,6 +610,7 @@ class FString
     // Data members
     std::wstring         string{};
     mutable std::string  char_string{};
+    mutable std::mutex   char_string_mutex{}
     static wchar_t       null_char;
     static const wchar_t const_null_char;
 

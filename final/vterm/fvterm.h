@@ -51,6 +51,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -411,6 +412,8 @@ class FVTerm : public FVTermAttribute
     mutable FOverlayLineBuffer    overlay_line_buffer{};        // Overlay region line buffer
     mutable FOverlaySearchBuffer  overlay_search_buffer{};      // Overlay search state buffer
     mutable FTermRegionList       covered_regions_buffer{};     // Covered overlay regions buffer
+    mutable std::mutex            line_changes_batch_mutex{};   // Protects line_changes_batch_mutex
+    mutable std::mutex            buffer_mutex{};               // Protects the buffers
     FChar                         nc{};                         // Next character
     std::unique_ptr<FTermRegion>  vwin{};                       // Virtual window
     std::shared_ptr<FOutput>      foutput{};                    // Terminal output class
