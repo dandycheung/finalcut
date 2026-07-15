@@ -610,7 +610,7 @@ class FString
     // Data members
     std::wstring         string{};
     mutable std::string  char_string{};
-    mutable std::mutex   char_string_mutex{}
+    mutable std::mutex   char_string_mutex{};
     static wchar_t       null_char;
     static const wchar_t const_null_char;
 
