@@ -565,8 +565,7 @@ void FComboBox::passEventToListWindow (const FMouseEvent& ev)
   const auto& t = ev.getTermPos();
   const auto& p = list_window.list.termToWidgetPos(t);
   const auto b = ev.getButton();
-  const auto& new_ev = \
-      std::make_shared<FMouseEvent>(Event::MouseMove, p, t, b);
+  const auto& new_ev = makeMouseMovementEvent(p, t, b);
   setClickedWidget(&list_window.list);
   list_window.list.setFocus();
   list_window.list.onMouseMove(new_ev.get());
@@ -631,8 +630,7 @@ void FComboBox::cb_inputFieldHandOver()
   const auto& t = mouse.getPos();
   const auto& p = list_window.list.termToWidgetPos(t);
   const auto b = ( mouse.isLeftButtonPressed() ) ? MouseButton::Left : MouseButton::None;
-  const auto& new_ev = \
-      std::make_shared<FMouseEvent>(Event::MouseMove, p, t, b);
+  const auto& new_ev = makeMouseMovementEvent(p, t, b);
   setClickedWidget(&list_window.list);
   list_window.list.setFocus();
   list_window.list.onMouseMove(new_ev.get());

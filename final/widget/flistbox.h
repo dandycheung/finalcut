@@ -97,7 +97,7 @@ class FListBoxItem
     using FDataAccessPtr = std::shared_ptr<FDataAccess>;
 
     // Methods
-    auto stringFilter (const FString&) const -> FString;
+    static auto stringFilter (const FString&) -> FString;
 
     // Data members
     FString         text{};
@@ -156,7 +156,7 @@ inline void FListBoxItem::clear()
 { text.clear(); }
 
 //----------------------------------------------------------------------
-inline auto FListBoxItem::stringFilter (const FString& txt) const -> FString
+inline auto FListBoxItem::stringFilter (const FString& txt) -> FString
 {
   return txt.rtrim()
             .expandTabs(FVTerm::getFOutput()->getTabstop())

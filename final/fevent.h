@@ -163,6 +163,17 @@ class FMouseEvent : public FEvent  // mouse event
     MouseButton b{};
 };
 
+//----------------------------------------------------------------------
+// Help function - GCC 16.1 compile fix - GitHub issues #165
+#if defined(__GNUC__)
+__attribute__((noinline))
+#endif
+inline std::shared_ptr<FMouseEvent> makeMouseMovementEvent ( const FPoint& p
+                                                           , const FPoint& g
+                                                           , MouseButton b )
+{
+  return std::make_shared<FMouseEvent>(Event::MouseMove, p, g, b);
+}
 
 //----------------------------------------------------------------------
 // class FWheelEvent

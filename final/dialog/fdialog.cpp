@@ -1562,8 +1562,7 @@ inline void FDialog::passEventToSubMenu ( const MouseStates& ms
   const auto& g = ms.term_pos;
   const auto& p = dialog_menu.menu->termToWidgetPos(g);
   const auto b = ev.getButton();
-  const auto& new_ev = \
-      std::make_shared<FMouseEvent>(Event::MouseMove, p, g, b);
+  const auto new_ev = makeMouseMovementEvent(p, g, b);
   dialog_menu.menu->mouse_down = true;
   setClickedWidget(dialog_menu.menu);
   dialog_menu.menu->onMouseMove(new_ev.get());
