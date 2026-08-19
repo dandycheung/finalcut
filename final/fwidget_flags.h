@@ -37,7 +37,7 @@ namespace internal
 {
 
 template<typename T>
-inline bool checkBits (const T& subset, const T& superset)
+inline auto checkBits (const T& subset, const T& superset) -> bool
 {
   static_assert( sizeof(T) == sizeof(uInt16), "Must be a 16-bit struct" );
   uInt16 a{};
@@ -108,8 +108,8 @@ struct FWidgetFlags
   FWidgetType        type;
 };
 
-inline bool containsFWidgetFlags ( const FWidgetFlags& subset
-                                 , const FWidgetFlags& superset )
+inline auto containsFWidgetFlags ( const FWidgetFlags& subset
+                                 , const FWidgetFlags& superset ) -> bool
 {
   return internal::checkBits (subset.feature, superset.feature)
       && internal::checkBits (subset.visibility, superset.visibility)

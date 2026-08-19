@@ -63,8 +63,8 @@ constexpr auto adjustValue (T current, T reference, T delta, T minLimit) -> T
 
   if ( reference >= delta )
     return reference - delta;
-  else
-    return minLimit;  // Avoid underflow
+
+  return minLimit;  // Avoid underflow
 }
 
 struct var

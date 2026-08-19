@@ -149,7 +149,7 @@ auto FTermFunctionsTest::unicode_to_utf8_string (wchar_t ucs) -> std::string
 {
   std::array<char, 4> buf{};
   const uInt32 len = finalcut::UTF8::encode(wchar_t(ucs), buf);
-  return std::string(&buf[0], len);
+  return {&buf[0], len};
 }
 
 //----------------------------------------------------------------------

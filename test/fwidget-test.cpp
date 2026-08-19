@@ -503,7 +503,7 @@ class FWidgetTest::FSystemTest : public finalcut::FSystem
 #endif
     }
 
-    auto putstring (const char* str, std::size_t len) noexcept -> int
+    auto putstring (const char* str, std::size_t len) noexcept -> int override
     {
       return std::fwrite(str, 1, len, stdout);
     }

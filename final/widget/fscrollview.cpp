@@ -227,9 +227,10 @@ void FScrollView::setHeight (std::size_t h, bool adjust)
   FWidget::setHeight (h, adjust);
   viewport_geometry.setHeight(h - horizontal_border_spacing);
   calculateScrollBarPos();
+  const auto viewport_height = getViewportHeight();
 
-  if ( getScrollHeight() < getViewportHeight() )
-    setScrollHeight (getViewportHeight());
+  if ( getScrollHeight() < viewport_height )
+    setScrollHeight (viewport_height);
 
   if ( ! viewport )
     return;
@@ -782,8 +783,8 @@ void FScrollView::init()
   FScrollView::resetColors();
   FScrollView::setGeometry (FPoint{1, 1}, FSize{4, 4});
   setMinimumSize (FSize{4, 4});
-  std::size_t width = std::max(std::size_t(1), getViewportWidth());
-  std::size_t height = std::max(std::size_t(1), getViewportHeight());
+  const auto width = getViewportWidth();
+  const auto height = getViewportHeight();
   createViewport({ FSize{width, height} });
   addLocalPreprocessingHandler();
 
@@ -937,9 +938,11 @@ void FScrollView::changeSize (const FSize& size, bool adjust)
   viewport_geometry.setSize ( w - vertical_border_spacing - nf_offset
                             , h - horizontal_border_spacing );
   calculateScrollBarPos();
+  const auto viewport_width = getViewportWidth();
+  const auto viewport_height = getViewportHeight();
 
-  if ( getScrollWidth() < getViewportWidth()
-    || getScrollHeight() < getViewportHeight() )
+  if ( getScrollWidth() < viewport_width
+    || getScrollHeight() < viewport_height )
   {
     FScrollView::setScrollSize (getViewportSize());
   }

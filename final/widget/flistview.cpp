@@ -1400,7 +1400,6 @@ auto FListView::getNullIterator() -> FObject::iterator
   return data.selflist.end();
 }
 
-
 //----------------------------------------------------------------------
 inline auto FListView::canSkipDragScrolling() -> bool
 {
@@ -1538,10 +1537,12 @@ void FListView::draw()
   if ( FVTerm::getFOutput()->isNewFont() && ! scroll.vbar->isShown() )
   {
     setColor();
+    const auto height = int(getHeight());
+    const auto x = int(getWidth()) - 1;
 
-    for (auto y{2}; y < int(getHeight()); y++)
+    for (auto y{2}; y < height; y++)
     {
-      print() << FPoint{int(getWidth()) - 1, y}
+      print() << FPoint{x, y}
               << ' ';  // clear right side of the scroll bar
     }
   }
@@ -1580,9 +1581,12 @@ void FListView::drawScrollBars() const
 //----------------------------------------------------------------------
 void FListView::drawHeadlines()
 {
+  const auto height = getHeight();
+  const auto width = getWidth();
+
   if ( data.header.empty()
-    || getHeight() <= 2
-    || getWidth() <= 4
+    || height <= 2
+    || width <= 4
     || max_line_width < 1 )
     return;
 
@@ -1610,18 +1614,23 @@ void FListView::drawList()
   if ( canSkipListDrawing() )
     return;
 
-  int y{0};
-  const auto page_height = int(getHeight()) - 2;
+  int y{2};
+  const auto page_height = int(getHeight());
   const auto& itemlist_end = data.itemlist.end();
   auto path_end = itemlist_end;
   auto iter = scroll.first_visible_line;
 
-  while ( iter != path_end && iter != itemlist_end && y < page_height )
+  while ( y < page_height)
   {
+    if ( iter == path_end || iter == itemlist_end )
+      break;
+
     const auto is_current_line = bool( iter == selection.current_iter );
     const auto& item = static_cast<FListViewItem*>(*iter);
     path_end = getListEnd(item);
-    print() << FPoint{2, 2 + y};
+
+    const FPoint print_pos{2, y};
+    print() << print_pos;
 
     // Draw one FListViewItem
     drawListLine (item, getFlags().focus.focus, is_current_line);
@@ -1656,7 +1665,7 @@ inline void FListView::setInputCursor ( const FListViewItem* item
 }
 
 //----------------------------------------------------------------------
-inline void FListView::finalizeListDrawing (int y)
+inline void FListView::finalizeListDrawing (volatile int y)
 {
   // Reset color
   setColor();
@@ -1664,8 +1673,10 @@ inline void FListView::finalizeListDrawing (int y)
   if ( FVTerm::getFOutput()->isMonochron() )
     setReverse(true);
 
+  const auto client_height = int(getClientHeight());
+
   // Clean empty space after last element
-  while ( y < int(getClientHeight()) )
+  while ( y < client_height )
   {
     print() << FPoint{2, 2 + y}
             << FString{std::size_t(getClientWidth()), ' '};
@@ -1794,15 +1805,16 @@ void FListView::clearList()
   const auto& wc_list = getColorTheme()->list;
   setColor (wc_list.fg, wc_list.bg);
   const std::size_t size = getWidth() - 2;
+  const auto height = int(getHeight());
   drawBorder();
   drawHeadlines();
 
   if ( size == 0 )
     return;
 
-  for (auto y{0}; y < int(getHeight()) - 2; y++)
+  for (auto y{2}; y < height; y++)
   {
-    print() << FPoint{2, 2 + y} << FString{size, L' '};
+    print() << FPoint{2, y} << FString{size, L' '};
   }
 
   drawScrollBars();
@@ -2637,18 +2649,27 @@ inline void FListView::resetClickedPositions()
 //----------------------------------------------------------------------
 auto FListView::isWithinHeaderBounds (const FPoint& pos) const -> bool
 {
-  return pos.getX() > 1
-      && pos.getX() < int(getWidth())
-      && pos.getY() == 1;
+  const auto max_x = int(getWidth());
+  const int x = pos.getX();
+  const int y = pos.getY();
+
+  return x > 1
+      && x < max_x
+      && y == 1;
 }
 
 //----------------------------------------------------------------------
 auto FListView::isWithinListBounds (const FPoint& pos) const -> bool
 {
-  return pos.getX() > 1
-      && pos.getX() < int(getWidth())
-      && pos.getY() > 1
-      && pos.getY() < int(getHeight());
+  const auto max_x = int(getWidth());
+  const auto max_y = int(getHeight());
+  const int x = pos.getX();
+  const int y = pos.getY();
+
+  return x > 1
+      && x < max_x
+      && y > 1
+      && y < max_y;
 }
 
 //----------------------------------------------------------------------
@@ -2805,7 +2826,7 @@ inline void FListView::jumpToParentElement (const FListViewItem* item)
 
   const int difference = position_before - selection.current_iter.getPosition();
 
-  if ( scroll.first_visible_line.getPosition() - difference >= 0 )
+  if ( scroll.first_visible_line.getPosition() >= difference )
   {
     scroll.first_visible_line -= difference;
     scroll.last_visible_line -= difference;
@@ -2863,8 +2884,9 @@ inline void FListView::lastPos_impl()
     return;
 
   const auto element_count = int(getCount());
-  selection.current_iter += element_count - selection.current_iter.getPosition() - 1;
-  const int difference = element_count - scroll.last_visible_line.getPosition() - 1;
+  const int current_pos_offset = element_count - (selection.current_iter.getPosition() + 1);
+  selection.current_iter += current_pos_offset;
+  const int difference = element_count - (scroll.last_visible_line.getPosition() + 1);
   scroll.first_visible_line += difference;
   scroll.last_visible_line += difference;
 }

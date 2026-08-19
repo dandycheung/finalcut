@@ -118,8 +118,9 @@ class FSystemImpl : public FSystem
       va_list args{};
       va_start (args, request);
       void* argp = va_arg (args, void*);
-      int ret = ::ioctl (file_descriptor, request, argp);
       va_end (args);
+
+      int ret = ::ioctl (file_descriptor, request, argp);
       return ret;
     }
 
@@ -133,8 +134,9 @@ class FSystemImpl : public FSystem
       va_list args{};
       va_start (args, flags);
       auto mode = static_cast<mode_t>(va_arg (args, int));
-      int ret = ::open (pathname, flags, mode);
       va_end (args);
+
+      int ret = ::open (pathname, flags, mode);
       return ret;
     }
 

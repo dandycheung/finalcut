@@ -89,7 +89,7 @@ class FCharBuffer
       return UTF8::encode(ucs, buffer);
     }
 
-    inline const char* data() const noexcept
+    inline auto data() const noexcept -> const char*
     {
       return buffer.data();
     }

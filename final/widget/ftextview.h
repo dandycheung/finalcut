@@ -63,6 +63,7 @@
 #include "final/util/fstringstream.h"
 #include "final/vterm/fcolorpair.h"
 #include "final/vterm/fstyle.h"
+#include "final/widget/fscrollbar.h"
 
 namespace finalcut
 {

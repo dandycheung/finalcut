@@ -72,8 +72,8 @@ auto toTermcapString (const char* string) -> finalcut::FTermcap::TermcapString
 }
 
 //----------------------------------------------------------------------
-bool operator == ( const finalcut::FTermcap::TermcapString& lhs
-                 , const char* rhs )  // Operator overloading
+auto operator == ( const finalcut::FTermcap::TermcapString& lhs
+                 , const char* rhs ) -> bool  // Operator overloading
 {
   return std::string(lhs.data, lhs.length) == rhs;
 }

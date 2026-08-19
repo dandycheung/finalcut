@@ -163,6 +163,7 @@ void FButtonGroup::hide()
   }
 
   const std::size_t size = getWidth();
+  const auto height = int(getHeight());
 
   if ( size == 0 )
     return;
@@ -170,7 +171,7 @@ void FButtonGroup::hide()
   // Hide border
   unsetViewportPrint();
 
-  for (auto y{0}; y < int(getHeight()); y++)
+  for (auto y{0}; y < height; y++)
     print() << FPoint{1, 1 + y} << FString{size, L' '};
 
   setViewportPrint();

@@ -817,7 +817,8 @@ void FVTerm::putRegion (const FPoint& pos, FTermRegion* region) const noexcept
 }
 
 //----------------------------------------------------------------------
-void FVTerm::copyRegion (FTermRegion* dst, const FPoint& pos, FTermRegion* src) const noexcept
+void FVTerm::copyRegion ( FTermRegion* dst, const FPoint& pos
+                        , FTermRegion* src ) const noexcept
 {
   // Copies the src region to the dst region position
 
@@ -829,11 +830,15 @@ void FVTerm::copyRegion (FTermRegion* dst, const FPoint& pos, FTermRegion* src) 
 
   const int src_width = getFullRegionWidth(src);
   const int dst_width = getFullRegionWidth(dst);
-  const int src_height = src->minimized ? src->min_size.height : getFullRegionHeight(src);
-  const int ax = std::max(0, pos.getX() - 1);
-  const int ay = std::max(0, pos.getY() - 1);
-  const int ol = std::max(0, 1 - pos.getX());  // outside left
-  const int ot = std::max(0, 1 - pos.getY());  // outside top
+  const int src_height = src->minimized
+                       ? src->min_size.height
+                       : getFullRegionHeight(src);
+  const int pos_x = pos.getX();
+  const int pos_y = pos.getY();
+  const int ax = std::max(1, pos_x) - 1;
+  const int ay = std::max(1, pos_y) - 1;
+  const int ol = std::max(0, 1 - pos_x);  // outside left
+  const int ot = std::max(0, 1 - pos_y);  // outside top
   const int y_end = std::min(dst->size.height - ay, src_height - ot);
   const int length = std::min(dst->size.width - ax, src_width - ol);
 
@@ -850,6 +855,9 @@ void FVTerm::copyRegion (FTermRegion* dst, const FPoint& pos, FTermRegion* src) 
   if ( skip_one_vterm_update )  // dst is the virtual terminal
     determineCoveredRegions(src);
 
+  const auto x_max = uInt(ax + length - 1);
+  const auto y_max = uInt(ay + y_end - 1);
+
   for (int y{0}; y < y_end; y++)  // line loop
   {
     if ( skip_one_vterm_update && src_changes->trans_count > 0 )
@@ -864,7 +872,7 @@ void FVTerm::copyRegion (FTermRegion* dst, const FPoint& pos, FTermRegion* src) 
     }
 
     dst_changes->xmin = std::min(dst_changes->xmin, uInt(ax));
-    dst_changes->xmax = std::max(dst_changes->xmax, uInt(ax + length - 1));
+    dst_changes->xmax = std::max(dst_changes->xmax, x_max);
     ++src_changes;
     ++dst_changes;
     sc += src_width;
@@ -872,7 +880,7 @@ void FVTerm::copyRegion (FTermRegion* dst, const FPoint& pos, FTermRegion* src) 
   }
 
   dst->changes_in_row.ymin = std::min(dst->changes_in_row.ymin, uInt(ay));
-  dst->changes_in_row.ymax = std::max(dst->changes_in_row.ymax, uInt(ay + y_end - 1));
+  dst->changes_in_row.ymax = std::max(dst->changes_in_row.ymax, y_max);
   dst->has_changes = true;
 }
 

@@ -3,7 +3,7 @@
 *                                                                      *
 * This file is part of the FINAL CUT widget toolkit                    *
 *                                                                      *
-* Copyright 2014-2025 Markus Gans                                      *
+* Copyright 2014-2026 Markus Gans                                      *
 *                                                                      *
 * FINAL CUT is free software; you can redistribute it and/or modify    *
 * it under the terms of the GNU Lesser General Public License as       *
@@ -282,13 +282,17 @@ constexpr auto FRect::getLowerRightPos() const noexcept -> FPoint
 //----------------------------------------------------------------------
 constexpr auto FRect::getWidth() const noexcept -> size_type
 {
-  return static_cast<size_type>(std::max(0, X2 - (X1 - 1)));  // overflow save
+  return ( X2 >= X1 )
+       ? static_cast<size_type>(X2 - X1 + 1)
+       : 0;  // overflow save
 }
 
 //----------------------------------------------------------------------
 constexpr auto FRect::getHeight() const noexcept -> size_type
 {
-  return static_cast<size_type>(std::max(0, Y2 - (Y1 - 1)));  // overflow save
+  return ( Y2 >= Y1 )
+       ? static_cast<size_type>(Y2 - Y1 + 1)
+       : 0;  // overflow save
 }
 
 //----------------------------------------------------------------------

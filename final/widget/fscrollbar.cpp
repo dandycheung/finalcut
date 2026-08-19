@@ -3,7 +3,7 @@
 *                                                                      *
 * This file is part of the FINAL CUT widget toolkit                    *
 *                                                                      *
-* Copyright 2012-2024 Markus Gans                                      *
+* Copyright 2012-2026 Markus Gans                                      *
 *                                                                      *
 * FINAL CUT is free software; you can redistribute it and/or modify    *
 * it under the terms of the GNU Lesser General Public License as       *
@@ -549,7 +549,10 @@ auto FScrollBar::getVerticalClickedScrollType (int y) const -> ScrollType
   if ( y > 1 && y <= slider_pos + 1 )
     return ScrollType::PageBackward;  // before slider
 
-  if ( y > slider_pos + int(slider_length) + 1 && y < int(getHeight()) )
+  const int slider_end = slider_pos + int(slider_length) + 1;
+  const int scroll_height = int(getHeight());
+
+  if ( y > slider_end && y < scroll_height )
     return ScrollType::PageForward;  // after slider
 
   if ( y == int(getHeight()) )
@@ -593,7 +596,10 @@ auto FScrollBar::getHorizontalScrollType (int x) const -> ScrollType
   if ( x > 1 && x <= slider_pos + 1 )
     return ScrollType::PageBackward;  // before slider
 
-  if ( x > slider_pos + int(slider_length) + 1 && x < int(getWidth()) )
+  const int slider_end = slider_pos + int(slider_length) + 1;
+  const int scroll_height = int(getHeight());
+
+  if ( x > slider_end && x < scroll_height )
     return ScrollType::PageForward;  // after slider
 
   if ( x == int(getWidth()) )
@@ -658,7 +664,7 @@ void FScrollBar::jumpToClickPos (int x, int y)
 
   if ( bar_orientation == Orientation::Vertical )
   {
-    if ( y > 1 && y < int(getHeight()) )
+    if ( y > 1 && std::size_t(y) < getHeight() )
     {
       new_val = int( round ( double(max - min) * (y - 2.0 - (double(slider_length) / 2))
                            / double(bar_length - slider_length) ) );
@@ -670,7 +676,7 @@ void FScrollBar::jumpToClickPos (int x, int y)
   {
     const int nf = FVTerm::getFOutput()->isNewFont() ? 1 : 0;
 
-    if ( x > 1 + nf && x < int(getWidth()) - nf )
+    if ( x > 1 + nf && std::size_t(x) < getWidth() - std::size_t(nf) )
     {
       new_val = int( round ( double(max - min) * (x - 2.0 - nf - (double(slider_length) / 2))
                            / double(bar_length - slider_length) ) );

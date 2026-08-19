@@ -60,7 +60,7 @@ void FListViewTest::flistViewItemSetDataTest()
   list.setColumnSortType (1, finalcut::SortType::Name);
   finalcut::FStringList strList{"item 01"};
   auto iter = list.insert(strList);
-  finalcut::FListViewItem* item = static_cast<finalcut::FListViewItem*>(*iter);
+  auto item = static_cast<finalcut::FListViewItem*>(*iter);
   const int expected = 42;
   item->setData(expected);
   const auto result = item->getData<int>();
@@ -75,7 +75,7 @@ void FListViewTest::setCheckedTest()
   list.setColumnSortType (1, finalcut::SortType::Name);
   finalcut::FStringList strList{"item 01"};
   auto iter = list.insert(strList);
-  finalcut::FListViewItem* item = static_cast<finalcut::FListViewItem*>(*iter);
+  auto item = static_cast<finalcut::FListViewItem*>(*iter);
   item->setCheckable(true);
   item->setChecked(false);
   CPPUNIT_ASSERT(!item->isChecked());

@@ -209,16 +209,17 @@ void FListBox::clear()
   // clear list from screen
   const auto& wc_list = getColorTheme()->list;
   setColor (wc_list.fg, wc_list.bg);
-  const std::size_t size = getWidth() - 2;
+  const std::size_t size = std::max(std::size_t(2), getWidth()) - 2;
+  const auto height = int(getHeight());
   drawBorder();
   drawHeadline();
 
   if ( size == 0 )
     return;
 
-  for (auto y{0}; y < int(getHeight()) - 2; y++)
+  for (auto y{2}; y < height; y++)
   {
-    print() << FPoint{2, 2 + y} << FString{size, L' '};
+    print() << FPoint{2, y} << FString{size, L' '};
   }
 
   processChanged();
@@ -548,10 +549,12 @@ void FListBox::draw()
   if ( FVTerm::getFOutput()->isNewFont() && ! scroll.vbar->isShown() )
   {
     setColor();
+    const auto height = int(getHeight());
+    const auto x = int(getWidth()) - 1;
 
-    for (auto y{2}; y < int(getHeight()); y++)
+    for (auto y{2}; y < height; y++)
     {
-      print() << FPoint{int(getWidth()) - 1, y}
+      print() << FPoint{x, y}
               << ' ';  // clear right side of the scroll bar
     }
   }
@@ -617,7 +620,11 @@ void FListBox::drawHeadline()
 //----------------------------------------------------------------------
 inline auto FListBox::canSkipDrawing() const -> bool
 {
-  return data.itemlist.empty() || getHeight() <= 2 || getWidth() <= 4;
+  const auto height = getHeight();
+  const auto width = getWidth();
+  return data.itemlist.empty()
+      || height <= 2
+      || width <= 4;
 }
 
 //----------------------------------------------------------------------
@@ -1421,10 +1428,15 @@ inline void FListBox::lastPos()
 //----------------------------------------------------------------------
 inline auto FListBox::isWithinListBounds (const FPoint& pos) const -> bool
 {
-  return pos.getX() > 1
-      && pos.getX() < int(getWidth())
-      && pos.getY() > 1
-      && pos.getY() < int(getHeight());
+  const auto max_x = int(getWidth());
+  const auto max_y = int(getHeight());
+  const int x = pos.getX();
+  const int y = pos.getY();
+
+  return x > 1
+      && x < max_x
+      && y > 1
+      && y < max_y;
 }
 
 //----------------------------------------------------------------------

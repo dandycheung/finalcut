@@ -607,10 +607,15 @@ auto FTextView::getTextWidth() const -> std::size_t
 //----------------------------------------------------------------------
 inline auto FTextView::isWithinTextBounds (const FPoint& pos) const -> bool
 {
-  return pos.getX() > 1
-      && pos.getX() < int(getWidth())
-      && pos.getY() > 1
-      && pos.getY() < int(getHeight());
+  const auto max_x = int(getWidth());
+  const auto max_y = int(getHeight());
+  const int x = pos.getX();
+  const int y = pos.getY();
+
+  return x > 1
+      && x < max_x
+      && y > 1
+      && y < max_y;
 }
 
 //----------------------------------------------------------------------
@@ -724,9 +729,11 @@ void FTextView::drawText()
 //----------------------------------------------------------------------
 inline auto FTextView::canSkipDrawing() const -> bool
 {
+  const auto height = getHeight();
+  const auto width = getWidth();
   return data.empty()
-      || getHeight() < 3
-      || getWidth() < 3;
+      || height < 3
+      || width < 3;
 }
 
 //----------------------------------------------------------------------

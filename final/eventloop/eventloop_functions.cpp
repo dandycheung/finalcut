@@ -3,7 +3,7 @@
 *                                                                      *
 * This file is part of the FINAL CUT widget toolkit                    *
 *                                                                      *
-* Copyright 2023-2025 Markus Gans                                      *
+* Copyright 2023-2026 Markus Gans                                      *
 *                                                                      *
 * FINAL CUT is free software; you can redistribute it and/or modify    *
 * it under the terms of the GNU Lesser General Public License as       *
@@ -27,7 +27,7 @@
 #include <cstddef>
 #include <system_error>
 #include <thread>
-		
+
 #include "final/eventloop/eventloop_functions.h"
 #include "final/ftypes.h"
 
@@ -69,26 +69,31 @@ void drainPipe (FileDescriptor fd)
   int attempts{0};
 
   // Ensure that the correct number of bytes are read from the pipe
-  while ( bytes_read < PIPE_BUFFER_SIZE
-       && attempts < MAX_DRAIN_ATTEMPTS )
+  while ( true )
   {
-     try
-     {
-       bytes_read += readFromPipe (fd, buffer, PIPE_BUFFER_SIZE - bytes_read);
-       attempts = 0;  // Reset retry count on successful read
-     }
-     catch (const std::system_error& e)
-     {
-       if ( e.code().value() == EAGAIN
-         || e.code().value() == EWOULDBLOCK )
-       {
-         attempts++;
-         std::this_thread::sleep_for(RETRY_DELAY);
-         continue;
-       }
+    if ( bytes_read >= PIPE_BUFFER_SIZE )
+      break;
 
-       throw; // Re-throw other errors
-     }
+    if ( attempts >= MAX_DRAIN_ATTEMPTS )
+      break;
+
+    try
+    {
+      bytes_read += readFromPipe (fd, buffer, PIPE_BUFFER_SIZE - bytes_read);
+      attempts = 0;  // Reset retry count on successful read
+    }
+    catch (const std::system_error& e)
+    {
+      if ( e.code().value() == EAGAIN
+        || e.code().value() == EWOULDBLOCK )
+      {
+        attempts++;
+        std::this_thread::sleep_for(RETRY_DELAY);
+        continue;
+      }
+
+      throw; // Re-throw other errors
+    }
   }
 }
 

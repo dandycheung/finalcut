@@ -736,14 +736,14 @@ struct FAttribute
     }
   };
 
-  BitProxy bit()
+  auto bit() -> BitProxy
   {
-    return BitProxy(*this);
+    return {*this};
   }
 
-  ConstBitProxy bit() const
+  auto bit() const -> ConstBitProxy
   {
-    return ConstBitProxy(*this);
+    return {*this};
   }
 
   struct ByteProxy
@@ -786,14 +786,14 @@ struct FAttribute
     }
   };
 
-  ByteProxy byte()
+  auto byte() -> ByteProxy
   {
-    return ByteProxy(*this);
+    return {*this};
   }
 
-  ConstByteProxy byte() const
+  auto byte() const -> ConstByteProxy
   {
-    return ConstByteProxy(*this);
+    return {*this};
   }
 #endif  // defined(UNIT_TEST)
 

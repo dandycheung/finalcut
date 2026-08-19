@@ -234,22 +234,31 @@ inline auto FScrollView::getClassName() const -> FString
 //----------------------------------------------------------------------
 inline auto FScrollView::getViewportWidth() const -> std::size_t
 {
-  return ( getScrollHeight() > getViewportHeight() )
-         ? static_cast<std::size_t>(std::max (1, getGeometry().getX2() -
-                                                 (getGeometry().getX1() - 1) -
-                                                 static_cast<int>(vertical_border_spacing) -
-                                                 static_cast<int>(nf_offset)))
-         : static_cast<std::size_t>(std::max (1, getGeometry().getX2() -
-                                                 (getGeometry().getX1() - 1) -
-                                                 static_cast<int>(vertical_border_spacing)));
+  const auto width = std::size_t(getGeometry().getWidth());
+  const auto viewport_height = getViewportHeight();
+
+  if ( getScrollHeight() > viewport_height )
+  {
+    const auto total_spacing = vertical_border_spacing + std::size_t(nf_offset);
+    return width > total_spacing
+         ? width - total_spacing
+         : 1;
+  }
+
+  return width > vertical_border_spacing
+       ? width - vertical_border_spacing
+       : 1;
 }
 
 //----------------------------------------------------------------------
 inline auto FScrollView::getViewportHeight() const -> std::size_t
 {
-  return static_cast<std::size_t>(std::max (1, getGeometry().getY2() -
-                                               (getGeometry().getY1() - 1) -
-                                               static_cast<int>(horizontal_border_spacing)));
+  const auto height = std::size_t(getGeometry().getHeight());
+
+  if ( height <= horizontal_border_spacing )
+    return 1;
+
+  return std::max<std::size_t>(1, height - horizontal_border_spacing);
 }
 
 //----------------------------------------------------------------------

@@ -168,9 +168,9 @@ class FMouseEvent : public FEvent  // mouse event
 #if defined(__GNUC__)
 __attribute__((noinline))
 #endif
-inline std::shared_ptr<FMouseEvent> makeMouseMovementEvent ( const FPoint& p
-                                                           , const FPoint& g
-                                                           , MouseButton b )
+inline auto makeMouseMovementEvent ( const FPoint& p
+                                   , const FPoint& g
+                                   , MouseButton b ) -> std::shared_ptr<FMouseEvent>
 {
   return std::make_shared<FMouseEvent>(Event::MouseMove, p, g, b);
 }

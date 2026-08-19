@@ -300,7 +300,7 @@ class FListViewIterator
 
   private:
     // Predicate
-    bool isRootLevel() const noexcept
+    auto isRootLevel() const noexcept -> bool
     {
       return iter_path.empty();
     }
@@ -537,7 +537,7 @@ class FListView : public FWidget
     void drawHeadlines();
     void drawList();
     void setInputCursor (const FListViewItem*, int, bool);
-    void finalizeListDrawing (int);
+    void finalizeListDrawing (volatile int);
     void adjustWidthForTreeView (std::size_t&, std::size_t, bool) const;
     void drawListLine (const FListViewItem*, bool, bool);
     auto createColumnsString (const FListViewItem*) -> FString;
@@ -846,7 +846,13 @@ inline auto FListView::isVerticallyScrollable() const -> bool
 
 //----------------------------------------------------------------------
 inline auto FListView::canSkipListDrawing() const -> bool
-{ return isItemListEmpty() || getHeight() <= 2 || getWidth() <= 4; }
+{
+  const auto height = getHeight();
+  const auto width = getWidth();
+  return isItemListEmpty()
+      || height <= 2
+      || width <= 4;
+}
 
 //----------------------------------------------------------------------
 inline auto FListView::isLayoutInitialized() const -> bool

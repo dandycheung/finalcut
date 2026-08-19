@@ -818,9 +818,10 @@ inline void checkBorder (const FWidget* w, FRect& r)
 void drawBorder (FWidget* w, const FRect& r)
 {
   FRect rect = r;
+  const auto width = r.getWidth();
   checkBorder (w, rect);
 
-  if ( r.getWidth() < 3 )
+  if ( width < 3 )
     return;
 
   if ( FVTerm::getFOutput()->isNewFont() )
@@ -833,9 +834,10 @@ void drawBorder (FWidget* w, const FRect& r)
 void drawListBorder (FWidget* w, const FRect& r)
 {
   FRect rect = r;
+  const auto width = r.getWidth();
   checkBorder (w, rect);
 
-  if ( r.getWidth() < 3 )
+  if ( width < 3 )
     return;
 
   if ( FVTerm::getFOutput()->isNewFont() )
@@ -1037,7 +1039,9 @@ inline void drawBoxBottomLine (GenericBoxData& bd)
 void drawGenericBox ( FWidget* w, const FRect& r
                     , const std::array<wchar_t, 8>& box_char )
 {
-  if ( ! w || ! w->getPrintRegion() || r.getWidth() < 3 )
+  const auto width = r.getWidth();
+
+  if ( ! w || ! w->getPrintRegion() ||  width < 3 )
     return;
 
   GenericBoxData box_data(w, r, box_char);

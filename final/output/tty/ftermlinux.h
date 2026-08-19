@@ -67,6 +67,7 @@
 #include <utility>
 #include <vector>
 
+#include "final/output/tty/ftermcap.h"
 #include "final/output/tty/ftermdata.h"
 #include "final/util/fstring.h"
 
