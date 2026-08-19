@@ -940,7 +940,7 @@ struct GenericBoxData
     , y2{int(y_offset) + r.getY2() - 1}
     , max_width{uInt(region.size.width + region.shadow.width - 1)}
     , width{uInt(r.getWidth())}
-    , line_length{width - 2}
+    , line_length{width > 2 ? width - 2 : 0}
     , is_transparent{fchar.isBitSet(internal::var::print_trans_mask)}
     , trans_count_increment{uInt(is_transparent) * width}
   {

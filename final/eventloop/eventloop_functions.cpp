@@ -41,7 +41,7 @@ using ByteCount = std::size_t;
 // Constants
 namespace
 {
-  constexpr int MAX_DRAIN_ATTEMPTS{5};  // Prevent infinite loops
+  constexpr uInt MAX_DRAIN_ATTEMPTS{5};  // Prevent infinite loops
   constexpr std::size_t PIPE_BUFFER_SIZE{sizeof(PipeBuffer)};
   constexpr std::chrono::milliseconds RETRY_DELAY{1};
 }
@@ -66,20 +66,18 @@ void drainPipe (FileDescriptor fd)
 
   PipeBuffer buffer{0};
   ByteCount bytes_read{0};
-  int attempts{0};
+  uInt attempts{0};
 
   // Ensure that the correct number of bytes are read from the pipe
   while ( true )
   {
-    if ( bytes_read >= PIPE_BUFFER_SIZE )
-      break;
-
-    if ( attempts >= MAX_DRAIN_ATTEMPTS )
+    if ( bytes_read >= PIPE_BUFFER_SIZE || attempts >= MAX_DRAIN_ATTEMPTS )
       break;
 
     try
     {
-      bytes_read += readFromPipe (fd, buffer, PIPE_BUFFER_SIZE - bytes_read);
+      const auto remaining_space = PIPE_BUFFER_SIZE - bytes_read;
+      bytes_read += readFromPipe (fd, buffer, remaining_space);
       attempts = 0;  // Reset retry count on successful read
     }
     catch (const std::system_error& e)

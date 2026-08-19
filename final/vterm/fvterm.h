@@ -661,10 +661,10 @@ inline auto FVTerm::FTermRegion::reprint ( const FRect& box
     return false;
 
   // Explicit type cast to avoid undefined behavior
-  const int box_x1 = int(static_cast<unsigned int>(box.getX1()) - 1);
-  const int box_y1 = int(static_cast<unsigned int>(box.getY1()) - 1);
-  const int box_x2 = int(static_cast<unsigned int>(box.getX2()) - 1);
-  const int box_y2 = int(static_cast<unsigned int>(box.getY2()) - 1);
+  const auto box_x1 = int(static_cast<unsigned int>(box.getX1()) - 1);
+  const auto box_y1 = int(static_cast<unsigned int>(box.getY1()) - 1);
+  const auto box_x2 = int(static_cast<unsigned int>(box.getX2()) - 1);
+  const auto box_y2 = int(static_cast<unsigned int>(box.getY2()) - 1);
 
   if ( box_x1 > box_x2 || box_y1 > box_y2 )
     return false;

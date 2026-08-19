@@ -549,8 +549,8 @@ auto FScrollBar::getVerticalClickedScrollType (int y) const -> ScrollType
   if ( y > 1 && y <= slider_pos + 1 )
     return ScrollType::PageBackward;  // before slider
 
-  const int slider_end = slider_pos + int(slider_length) + 1;
-  const int scroll_height = int(getHeight());
+  const auto slider_end = slider_pos + int(slider_length) + 1;
+  const auto scroll_height = int(getHeight());
 
   if ( y > slider_end && y < scroll_height )
     return ScrollType::PageForward;  // after slider
@@ -596,8 +596,8 @@ auto FScrollBar::getHorizontalScrollType (int x) const -> ScrollType
   if ( x > 1 && x <= slider_pos + 1 )
     return ScrollType::PageBackward;  // before slider
 
-  const int slider_end = slider_pos + int(slider_length) + 1;
-  const int scroll_height = int(getHeight());
+  const auto slider_end = slider_pos + int(slider_length) + 1;
+  const auto scroll_height = int(getHeight());
 
   if ( x > slider_end && x < scroll_height )
     return ScrollType::PageForward;  // after slider
